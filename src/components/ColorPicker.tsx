@@ -15,12 +15,14 @@ export function ColorPicker({ palettes, selectedColorId, onSelect, actions }: Pr
   const palette = palettes.find(p => p.colors.some(c => c.id === selectedColorId)) ?? palettes[0];
   const tray = useRef<HTMLDivElement>(null);
 
-  // keep the picked drop in view when the arrows move past the visible rows (the tray is position: relative)
+  // keep the picked drop in view: the tray scrolls sideways on phones, down on wide screens (it is position: relative)
   useEffect(() => {
     const t = tray.current, el = t?.querySelector<HTMLElement>('[aria-checked="true"]');
     if (!t || !el) return;
     if (el.offsetTop < t.scrollTop) t.scrollTop = el.offsetTop - 8;
     else if (el.offsetTop + el.offsetHeight > t.scrollTop + t.clientHeight) t.scrollTop = el.offsetTop + el.offsetHeight - t.clientHeight + 12;
+    if (el.offsetLeft < t.scrollLeft) t.scrollLeft = el.offsetLeft - 14;
+    else if (el.offsetLeft + el.offsetWidth > t.scrollLeft + t.clientWidth * 0.85) t.scrollLeft = el.offsetLeft + el.offsetWidth - t.clientWidth * 0.85 + 14;
   }, [selectedColorId]);
 
   if (!palette) return null;

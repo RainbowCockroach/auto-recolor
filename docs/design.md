@@ -84,8 +84,8 @@ From top to bottom; nothing is fixed to the top. Keep it compact: 8–10px page 
    - bottom-right: round **View big** button (opens the viewer)
 2. **Color name + download row** (one row): round ◀ and ▶ around the color name (Fredoka 16px) with "hex · 14/76", then a compact honey download pill showing only the icon and the file count, plus the round **Save to folder** button when `canSaveToFolder()`.
 3. **Palette pills:** hidden when there is only one palette. Otherwise one per palette (34px tall), scrolling sideways. Each shows 3 overlapping sample dots (first, middle, last color), the name and the count. The active pill is raised.
-4. **Color tray:** only the active palette's drops (30px on phones), about 10 per row. About 2½ rows are visible; the rest scrolls inside the tray, with a fade mask at the bottom.
-5. **Drawer** (bottom sheet, shadow cast upward). Closed, it is nearly hidden: only a thin 32px strip with a small grab handle peeks out, and no buttons. This overrides the canvas, which still draws the 4 tab buttons in the closed state. Open, it has a row of 4 round tab buttons on top:
+4. **Color tray:** only the active palette's drops (30px on phones) in 2 rows that scroll sideways, with a fade at the right edge. On wide screens it is a grid where about 2½ rows are visible; the rest scrolls inside the tray, with a fade mask at the bottom.
+5. **Drawer** (bottom sheet, shadow cast upward). Closed, it is nearly hidden: only a thin 32px semi-transparent (frosted) strip with a small grab handle peeks out, and no buttons. This overrides the canvas, which still draws the 4 tab buttons in the closed state. Open, it has a row of 4 round tab buttons on top:
    - **Images:** round image bubbles plus a dashed + bubble to add PNGs
    - **Colors:** the palette editor (see below)
    - **Tune:** Natural/Legacy/Stylized, Strength, "Only the main color" switch, then Hue range, Brightness match, Hue variety, Saturation, Contrast (Legacy has no Contrast; Stylized has Shadow/highlight shift and Contrast)
