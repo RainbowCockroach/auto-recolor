@@ -20,12 +20,15 @@ interface Props {
   onBackground: (v: Background) => void;
   onPick: (x: number, y: number) => void;
   onAddClick: () => void;
+  /** Quick image switcher inside the picture; only passed on phones, where the image list sits in the drawer. */
+  images?: LoadedImage[];
+  onSelectImage?: (id: string) => void;
 }
 
 /** Sprites smaller than this are drawn with hard pixel edges when scaled up. */
 const PIXEL_ART_SIDE = 200;
 
-export function PreviewPanel({ image, target, preview, showMask, background, onShowMask, onBackground, onPick, onAddClick }: Props) {
+export function PreviewPanel({ image, target, preview, showMask, background, onShowMask, onBackground, onPick, onAddClick, images = [], onSelectImage }: Props) {
   const pixelated = !!image && Math.max(image.width, image.height) < PIXEL_ART_SIDE;
   // Both tied to the image they were started for, so they end when another image is picked.
   const [viewing, setViewing] = useState<{ id: string; side: Side } | null>(null);
@@ -74,6 +77,16 @@ export function PreviewPanel({ image, target, preview, showMask, background, onS
                 <Eye size={19} />
               </button>
             </div>
+            {images.length > 1 && (
+              <div className="stage-imgs" aria-label="Images">
+                {images.map(img => (
+                  <button key={img.id} type="button" className="mini-bub" aria-current={img.id === image.id}
+                    aria-label={img.name} title={img.name} onClick={() => onSelectImage?.(img.id)}>
+                    <BitmapCanvas bitmap={img.thumb} pixelated={Math.max(img.width, img.height) < PIXEL_ART_SIDE} />
+                  </button>
+                ))}
+              </div>
+            )}
             <button type="button" className="rb sm stage-big" aria-label="View big" title="View big" onClick={() => open(picking ? 'original' : 'result')}>
               <Maximize2 size={19} />
             </button>

@@ -184,6 +184,24 @@ export function App() {
     ) },
   ];
 
+  const exportRow = (
+    <div className="export">
+      <button type="button" className="rb honey wide-pill" disabled={!!saving || !fileCount}
+        aria-label={saving ? `Saving ${saving.done} of ${saving.total}` : `Download ZIP, ${fileCount} files`} title="Download ZIP"
+        onClick={() => void runExport('zip')}>
+        <Download size={20} />{saving ? `${saving.done}/${saving.total}` : wide ? `Download ${fileCount}` : fileCount}
+      </button>
+      {canSaveToFolder() && (
+        <button type="button" className="rb" disabled={!!saving || !fileCount} aria-label="Save to folder" title="Save to folder"
+          onClick={() => void runExport('folder')}>
+          <FolderDown size={22} />
+        </button>
+      )}
+      {wide && <span className="count">{plural(images.length, 'image')} × {plural(colorCount, 'color')}</span>}
+      {saving && <span className="progress" style={{ width: `${(saving.done / Math.max(1, saving.total)) * 100}%` }} />}
+    </div>
+  );
+
   const message = undo ? `Removed ${undo.label}` : status;
 
   return (
@@ -192,25 +210,13 @@ export function App() {
 
       <main className="center">
         <PreviewPanel image={image} target={target} preview={preview} showMask={showMask} background={background}
-          onShowMask={setShowMask} onBackground={setBackground} onPick={pick} onAddClick={() => fileInput.current?.click()} />
+          onShowMask={setShowMask} onBackground={setBackground} onPick={pick} onAddClick={() => fileInput.current?.click()}
+          images={wide ? undefined : images} onSelectImage={setSelectedImageId} />
 
-        <div className="export">
-          <button type="button" className="rb honey wide-pill" disabled={!!saving || !fileCount}
-            aria-label={saving ? `Saving ${saving.done} of ${saving.total}` : `Download ZIP, ${fileCount} files`} title="Download ZIP"
-            onClick={() => void runExport('zip')}>
-            <Download size={20} />{saving ? `${saving.done}/${saving.total}` : `Download ${fileCount}`}
-          </button>
-          {canSaveToFolder() && (
-            <button type="button" className="rb" disabled={!!saving || !fileCount} aria-label="Save to folder" title="Save to folder"
-              onClick={() => void runExport('folder')}>
-              <FolderDown size={22} />
-            </button>
-          )}
-          {wide && <span className="count">{plural(images.length, 'image')} × {plural(colorCount, 'color')}</span>}
-          {saving && <span className="progress" style={{ width: `${(saving.done / Math.max(1, saving.total)) * 100}%` }} />}
-        </div>
+        {wide && exportRow}
 
-        <ColorPicker palettes={palettes} selectedColorId={target?.color.id ?? null} onSelect={setSelectedColorId} />
+        <ColorPicker palettes={palettes} selectedColorId={target?.color.id ?? null} onSelect={setSelectedColorId}
+          actions={wide ? undefined : exportRow} />
       </main>
 
       <Drawer tabs={wide ? tabs.filter(t => t.id !== 'images') : tabs} wide={wide} initial="tune" />

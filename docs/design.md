@@ -62,11 +62,11 @@ There is no monospace font any more. Hex codes and file names use Fredoka.
 
 ## 3D recipes
 
-- **Round button** (`.rb`): 48px circle (40px small), `background: linear-gradient(#fdfcfa, #e9e6e0)`, `box-shadow: inset 0 2px 0 #fff, inset 0 -3px 0 rgba(0,0,0,.06), 0 4px 0 var(--line), 0 7px 12px rgba(70,60,50,.16)`. On press: move it down 3–4px and shrink the base shadow, so it "pushes in". Lucide icon at 19–22px, stroke 2.2. Icon only, with `aria-label` and `title`.
+- **Round button** (`.rb`): 48px circle (40px small), `background: linear-gradient(#fdfcfa, #e9e6e0)`, `box-shadow: inset 0 2px 0 #fff, inset 0 -2px 0 rgba(0,0,0,.05), 0 3px 0 var(--line), 0 5px 9px rgba(70,60,50,.13)` (toned down from the canvas, which is deeper). On press: move it down 3px and shrink the base shadow, so it "pushes in". Lucide icon at 19–22px, stroke 2.2. Icon only, with `aria-label` and `title`.
 - **Honey button:** same shape with the honey gradient and base `#b9852d`. Download is a wide honey pill: "⬇ Download 103".
 - **Card:** radius 24px (28px on tablet), `box-shadow: inset 0 2px 0 #fff, 0 5px 0 #d3cfc8, 0 10px 22px rgba(70,60,50,.1)`.
 - **Canvas well** (behind the picture): `--well` with `inset 0 3px 8px rgba(60,50,40,.18)`, radius 16px, inside a card with 10px padding.
-- **Paint drop** (swatch): a circle with the color as `background-color`, plus `background-image: radial-gradient(circle at 34% 28%, rgba(255,255,255,.6) 0, transparent 32%)` and `box-shadow: inset 0 -4px 6px rgba(0,0,0,.22), inset 0 2px 2px rgba(255,255,255,.3), 0 2px 0 rgba(60,50,40,.22)`. Selected: add `0 0 0 3px <surface>, 0 0 0 6px var(--ink)` and `scale(1.08)`. 34px on phone, 40px on tablet.
+- **Paint drop** (swatch): a circle with the color as `background-color`, plus `background-image: radial-gradient(circle at 34% 28%, rgba(255,255,255,.6) 0, transparent 32%)` and `box-shadow: inset 0 -4px 6px rgba(0,0,0,.22), inset 0 2px 2px rgba(255,255,255,.3), 0 2px 0 rgba(60,50,40,.22)`. Selected: add `0 0 0 3px <surface>, 0 0 0 6px var(--ink)` and `scale(1.08)`. 30px in the phone tray (34px in the Colors drawer), 40px on tablet.
 - **Pill toggle** (Natural/Legacy/Stylized, Original/Result): a sunken `--inset` track; the active option is a raised white pill.
 - **Slider:** 14px round track, sage fill up to the value, sunken shadow; 30px round raised knob.
 - **Switch:** 52×30 sage pill with a raised white knob.
@@ -74,18 +74,18 @@ There is no monospace font any more. Hex codes and file names use Fredoka.
 
 ## Phone layout (narrower than 900px, also tablets held upright)
 
-From top to bottom; nothing is fixed to the top:
+From top to bottom; nothing is fixed to the top. Keep it compact: 8–10px page margins, a thin card frame (5px) around the well, and the picture inset only 10px inside the well (18px on wide screens). This tighter phone layout overrides the canvas.
 
 1. **Picture card** (takes all spare height). Inside the canvas well:
    - the recolored result, large
-   - top-left: a 64px round **original bubble** with a small pipette badge. Tapping it starts pick mode: the bubble gets a honey ring, the big picture shows the original with a "Tap the color to replace" chip, and the next tap on the picture picks the color and ends pick mode
-   - top-right: round **Background** and **Mask** buttons
+   - top-left: a 50px round **original bubble** with a small pipette badge. Tapping it starts pick mode: the bubble gets a honey ring, the big picture shows the original with a "Tap the color to replace" chip, and the next tap on the picture picks the color and ends pick mode
+   - top-right: 36px round **Background** and **Mask** buttons
+   - bottom-left, only with 2+ images: a row of small round **image bubbles** (38px); tapping one switches the preview to that image. The drawer's Images tab still adds and removes images
    - bottom-right: round **View big** button (opens the viewer)
-2. **Download row:** a wide honey "Download N" pill plus a round **Save to folder** button. The folder button only shows when `canSaveToFolder()`.
-3. **Color name row:** round ◀ and ▶ buttons that step through the current palette's colors, wrapping around. In between: the color name (Fredoka 18px), the hex code and "14 of 76".
-4. **Palette pills:** one per palette, scrolling sideways. Each shows 3 overlapping sample dots (first, middle, last color), the name and the count. The active pill is raised.
-5. **Color tray:** only the active palette's drops, in an 8-column grid. About 2½ rows are visible; the rest scrolls inside the tray, with a fade mask at the bottom.
-6. **Drawer** (bottom sheet, shadow cast upward). Closed, it is nearly hidden: only a thin 32px strip with a small grab handle peeks out, and no buttons. This overrides the canvas, which still draws the 4 tab buttons in the closed state. Open, it has a row of 4 round tab buttons on top:
+2. **Color name + download row** (one row): round ◀ and ▶ around the color name (Fredoka 16px) with "hex · 14/76", then a compact honey download pill showing only the icon and the file count, plus the round **Save to folder** button when `canSaveToFolder()`.
+3. **Palette pills:** hidden when there is only one palette. Otherwise one per palette (34px tall), scrolling sideways. Each shows 3 overlapping sample dots (first, middle, last color), the name and the count. The active pill is raised.
+4. **Color tray:** only the active palette's drops (30px on phones), about 10 per row. About 2½ rows are visible; the rest scrolls inside the tray, with a fade mask at the bottom.
+5. **Drawer** (bottom sheet, shadow cast upward). Closed, it is nearly hidden: only a thin 32px strip with a small grab handle peeks out, and no buttons. This overrides the canvas, which still draws the 4 tab buttons in the closed state. Open, it has a row of 4 round tab buttons on top:
    - **Images:** round image bubbles plus a dashed + bubble to add PNGs
    - **Colors:** the palette editor (see below)
    - **Tune:** Natural/Legacy/Stylized, Strength, "Only the main color" switch, then Hue range, Brightness match, Hue variety, Saturation, Contrast (Legacy has no Contrast; Stylized has Shadow/highlight shift and Contrast)

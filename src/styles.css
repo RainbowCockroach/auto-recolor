@@ -40,7 +40,7 @@ button { cursor: pointer; }
 /* ---------- pieces ---------- */
 .rb { width: 48px; height: 48px; flex: none; display: inline-grid; place-items: center; padding: 0; border: 0; border-radius: 50%;
   color: #4a443d; background: linear-gradient(#fdfcfa, #e9e6e0);
-  box-shadow: inset 0 2px 0 #fff, inset 0 -3px 0 rgba(0,0,0,.06), 0 4px 0 var(--line), 0 7px 12px rgba(70,60,50,.16);
+  box-shadow: inset 0 2px 0 #fff, inset 0 -2px 0 rgba(0,0,0,.05), 0 3px 0 var(--line), 0 5px 9px rgba(70,60,50,.13);
   transition: transform .08s, box-shadow .08s; }
 .rb.sm { width: 40px; height: 40px; }
 .rb.xs { width: 30px; height: 30px; box-shadow: inset 0 2px 0 #fff, 0 2px 0 var(--line); }
@@ -50,12 +50,12 @@ button { cursor: pointer; }
 .rb.flat { background: none; box-shadow: none; color: var(--soft); }
 .rb.flat:active:not(:disabled) { transform: none; box-shadow: none; background: var(--inset); }
 .honey, .rb.honey { color: var(--honey-ink); background: linear-gradient(var(--honey-top), var(--honey-bottom));
-  box-shadow: inset 0 2px 0 rgba(255,255,255,.6), inset 0 -3px 0 rgba(0,0,0,.08), 0 4px 0 var(--honey-base), 0 7px 12px rgba(150,100,30,.25); }
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.6), inset 0 -2px 0 rgba(0,0,0,.07), 0 3px 0 var(--honey-base), 0 5px 9px rgba(150,100,30,.2); }
 .rb.honey:active:not(:disabled) { box-shadow: inset 0 2px 0 rgba(255,255,255,.6), 0 1px 0 var(--honey-base); }
 .text-btn { display: inline-flex; align-items: center; gap: 4px; border: 0; background: none; padding: 8px 10px; color: var(--soft); font-weight: 700; font-size: 0.9rem; }
 .flip { transform: rotate(180deg); }
 
-.card { background: var(--card); border-radius: 24px; box-shadow: inset 0 2px 0 #fff, 0 5px 0 #d3cfc8, 0 10px 22px rgba(70,60,50,.1); }
+.card { background: var(--card); border-radius: 24px; box-shadow: inset 0 2px 0 #fff, 0 3px 0 #d3cfc8, 0 6px 14px rgba(70,60,50,.08); }
 
 .drop { position: relative; width: 34px; height: 34px; flex: none; padding: 0; border: 0; border-radius: 50%;
   background-image: radial-gradient(circle at 34% 28%, rgba(255,255,255,.6) 0, rgba(255,255,255,0) 32%);
@@ -98,27 +98,33 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; border: 0; bord
 /* ---------- app layout (phone first) ---------- */
 .app { height: 100dvh; }
 /* scrolls only when the screen is too short to fit everything, e.g. a phone held sideways */
-.center { height: 100%; overflow-y: auto; display: flex; flex-direction: column; padding: 14px 14px calc(var(--peek) + env(safe-area-inset-bottom) + 6px); }
+.center { height: 100%; overflow-y: auto; display: flex; flex-direction: column; padding: 8px 10px calc(var(--peek) + env(safe-area-inset-bottom) + 4px); }
 
 /* picture */
-.stage-card { position: relative; flex: 1; min-height: 220px; padding: 10px; }
-.well { position: relative; height: 100%; border-radius: 16px; overflow: hidden; display: grid; place-items: center; box-shadow: inset 0 3px 8px rgba(60,50,40,.18); }
+.stage-card { position: relative; flex: 1; min-height: 200px; padding: 5px; border-radius: 20px; }
+.well { --pad: 10px; position: relative; height: 100%; border-radius: 15px; overflow: hidden; display: grid; place-items: center; box-shadow: inset 0 3px 8px rgba(60,50,40,.18); }
 .stage[data-bg="checker"] { background-color: var(--chk-a); background-image: conic-gradient(var(--chk-b) 25%, transparent 0 50%, var(--chk-b) 0 75%, transparent 0); background-size: 20px 20px; }
 .stage[data-bg="light"] { background: var(--card); }
 .stage[data-bg="dark"] { background: var(--ink); }
-.well > canvas { position: absolute; inset: 18px; width: calc(100% - 36px); height: calc(100% - 36px); object-fit: contain; cursor: crosshair; }
-.stage-open { position: absolute; inset: 18px; cursor: zoom-in; }
+.well > canvas { position: absolute; inset: var(--pad); width: calc(100% - 2 * var(--pad)); height: calc(100% - 2 * var(--pad)); object-fit: contain; cursor: crosshair; }
+.stage-open { position: absolute; inset: var(--pad); cursor: zoom-in; }
 .stage-open canvas { display: block; width: 100%; height: 100%; object-fit: contain; }
 .working, .chip { position: absolute; padding: 4px 12px; border-radius: 999px; background: var(--card); color: var(--soft); font-size: 0.85rem; box-shadow: 0 2px 0 var(--line); }
 .chip { bottom: 14px; color: var(--ink); }
-.orig-bub { position: absolute; top: 10px; left: 10px; width: 64px; height: 64px; padding: 6px; border-radius: 50%; border: 4px solid var(--card);
-  background: #dcd9d4; box-shadow: 0 4px 0 var(--line), 0 7px 12px rgba(70,60,50,.18); }
+.orig-bub { position: absolute; top: 8px; left: 8px; width: 50px; height: 50px; padding: 4px; border-radius: 50%; border: 3px solid var(--card);
+  background: #dcd9d4; box-shadow: 0 3px 0 var(--line), 0 5px 9px rgba(70,60,50,.15); }
 .orig-bub canvas { width: 100%; height: 100%; object-fit: contain; }
 .orig-bub[aria-pressed="true"] { border-color: var(--honey-top); box-shadow: 0 0 0 3px var(--honey-base), 0 4px 0 3px var(--honey-base); }
-.orig-bub .badge { position: absolute; right: -8px; bottom: -6px; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%;
+.orig-bub .badge { position: absolute; right: -7px; bottom: -5px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%;
   color: #4a443d; background: linear-gradient(#fff, #e9e6e0); box-shadow: 0 2px 0 var(--line); }
-.stage-tools { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 12px; }
-.stage-big { position: absolute; right: 10px; bottom: 10px; }
+.stage-tools { position: absolute; top: 8px; right: 8px; display: flex; flex-direction: column; gap: 10px; }
+.stage-big { position: absolute; right: 8px; bottom: 8px; }
+.stage .rb.sm { width: 36px; height: 36px; }
+.stage-imgs { position: absolute; left: 4px; bottom: 4px; max-width: calc(100% - 56px); display: flex; gap: 6px; padding: 4px; overflow-x: auto; scrollbar-width: none; }
+.stage-imgs::-webkit-scrollbar { display: none; }
+.mini-bub { flex: none; width: 38px; height: 38px; padding: 3px; border-radius: 50%; border: 3px solid var(--card); background: #dcd9d4; box-shadow: 0 2px 0 var(--line), 0 4px 7px rgba(70,60,50,.14); }
+.mini-bub canvas { width: 100%; height: 100%; object-fit: contain; }
+.mini-bub[aria-current="true"] { border-color: var(--ink); }
 .empty { display: grid; justify-items: center; gap: 6px; padding: 24px; border: 0; background: none; color: var(--soft); }
 .empty strong { font: 600 1.2rem var(--font-display); color: var(--ink); margin-top: 6px; }
 
@@ -130,21 +136,25 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; border: 0; bord
 
 /* color picker */
 .picker { flex: none; display: flex; flex-direction: column; }
-.picker-name { display: flex; align-items: center; gap: 10px; padding-top: 10px; }
+.picker-name { display: flex; align-items: center; gap: 6px; padding-top: 8px; }
+.picker-name .export { padding: 0 0 0 4px; gap: 8px; }
+.picker-name .wide-pill { flex: none; height: 40px; padding: 0 14px 0 12px; gap: 6px; font-size: 1rem; }
+.picker-name .export .rb:not(.wide-pill) { width: 40px; height: 40px; }
 .picker-label { flex: 1; min-width: 0; display: grid; text-align: center; line-height: 1.2; }
-.picker-label strong { font: 600 1.15rem var(--font-display); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pals { display: flex; gap: 8px; margin: 0 -14px; padding: 10px 14px 6px; overflow-x: auto; scrollbar-width: none; }
+.picker-label strong { font: 600 1rem var(--font-display); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pals { display: flex; gap: 8px; margin: 0 -10px; padding: 8px 10px 2px; overflow-x: auto; scrollbar-width: none; }
 .pals::-webkit-scrollbar { display: none; }
-.pal { flex: none; height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px 0 8px; border: 0; border-radius: 999px;
+.pal { flex: none; height: 34px; display: flex; align-items: center; gap: 8px; padding: 0 14px 0 8px; border: 0; border-radius: 999px;
   background: #ebe9e5; color: var(--soft); font-weight: 700; box-shadow: inset 0 2px 3px rgba(60,50,40,.12); }
 .pal[aria-selected="true"] { color: var(--ink); background: linear-gradient(#fff, #f1eee9); box-shadow: inset 0 2px 0 #fff, 0 3px 0 var(--line), 0 5px 8px rgba(60,50,40,.12); }
 .pal-dots { display: flex; }
 .pal-dots i { width: 12px; height: 12px; border-radius: 50%; margin-left: -4px; box-shadow: 0 0 0 2px var(--card); }
 .pal-dots i:first-child { margin-left: 0; }
-.tray { position: relative; display: grid; grid-template-columns: repeat(auto-fill, 34px); justify-content: space-between; gap: 10px 6px;
-  padding: 8px 6px 12px; max-height: 98px; overflow-y: auto; scrollbar-width: none;
+.tray { position: relative; display: grid; grid-template-columns: repeat(auto-fill, 30px); justify-content: space-between; gap: 8px 5px;
+  padding: 8px 4px 10px; max-height: 92px; overflow-y: auto; scrollbar-width: none;
   -webkit-mask-image: linear-gradient(#000 80%, transparent); mask-image: linear-gradient(#000 80%, transparent); }
 .tray::-webkit-scrollbar { display: none; }
+.tray .drop { width: 30px; height: 30px; }
 
 /* drawer */
 .drawer { position: fixed; z-index: 5; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; overflow: hidden;
@@ -250,9 +260,13 @@ body:has(.viewer[open]) { overflow: hidden; }
 .wide .rail .bubbles { flex-direction: column; flex-wrap: nowrap; align-items: center; }
 .wide .center { min-height: 0; padding: 0; }
 .wide .stage-card { border-radius: 28px; padding: 12px; }
-.wide .well { border-radius: 20px; }
+.wide .well { --pad: 18px; border-radius: 20px; }
 .wide .orig-bub { width: 112px; height: 112px; padding: 10px; border-width: 5px; top: 16px; left: 16px; }
-.wide .stage-tools { flex-direction: row; top: 16px; right: 16px; }
+.wide .orig-bub .badge { width: 26px; height: 26px; }
+.wide .stage-tools { flex-direction: row; gap: 12px; top: 16px; right: 16px; }
+.wide .stage .rb.sm { width: 40px; height: 40px; }
+.wide .picker-label strong { font-size: 1.15rem; }
+.wide .pal { height: 40px; }
 .wide .stage-big { right: 16px; bottom: 16px; }
 .wide .export .wide-pill { flex: none; padding: 0 26px 0 20px; height: 50px; }
 .wide .export .rb:not(.wide-pill) { width: 50px; height: 50px; }

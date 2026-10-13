@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Palette } from '../model';
 
@@ -6,10 +6,12 @@ interface Props {
   palettes: Palette[];
   selectedColorId: string | null;
   onSelect: (colorId: string) => void;
+  /** Extra buttons at the end of the name row (the download buttons on phones). */
+  actions?: ReactNode;
 }
 
 /** Palette pills, a tray of the active palette's colors, and arrows to step through them. */
-export function ColorPicker({ palettes, selectedColorId, onSelect }: Props) {
+export function ColorPicker({ palettes, selectedColorId, onSelect, actions }: Props) {
   const palette = palettes.find(p => p.colors.some(c => c.id === selectedColorId)) ?? palettes[0];
   const tray = useRef<HTMLDivElement>(null);
 
@@ -33,12 +35,13 @@ export function ColorPicker({ palettes, selectedColorId, onSelect }: Props) {
         <button type="button" className="rb sm" aria-label="Previous color" title="Previous color" onClick={() => step(-1)}><ChevronLeft size={19} /></button>
         <div className="picker-label" aria-live="polite">
           <strong>{color.name}</strong>
-          <span className="count">{color.hex} · {i + 1} of {colors.length}</span>
+          <span className="count">{color.hex} · {i + 1}/{colors.length}</span>
         </div>
         <button type="button" className="rb sm" aria-label="Next color" title="Next color" onClick={() => step(1)}><ChevronRight size={19} /></button>
+        {actions}
       </div>
 
-      <div className="pals" role="tablist" aria-label="Palettes">
+      {palettes.length > 1 && <div className="pals" role="tablist" aria-label="Palettes">
         {palettes.map(p => (
           <button key={p.id} type="button" role="tab" aria-selected={p.id === palette.id} className="pal"
             onClick={() => { if (p.id !== palette.id) onSelect(p.colors[0]!.id); }}>
@@ -48,7 +51,7 @@ export function ColorPicker({ palettes, selectedColorId, onSelect }: Props) {
             {p.name} <span className="count">{p.colors.length}</span>
           </button>
         ))}
-      </div>
+      </div>}
 
       <div className="tray" ref={tray} role="radiogroup" aria-label={`${palette.name} colors`}>
         {colors.map(c => (
