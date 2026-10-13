@@ -16,8 +16,8 @@ interface Props<T extends string> {
   initial: T;
 }
 
-/** Closed, only the handle and tab buttons peek out. */
-const PEEK = 112;
+/** Closed, only a thin strip with the grab handle peeks out. */
+const PEEK = 32;
 
 const useViewportHeight = () => {
   const [h, setH] = useState(() => window.innerHeight);
@@ -77,8 +77,8 @@ export function Drawer<T extends string>({ tabs, wide, initial }: Props<T>) {
   };
 
   return (
-    <section className={`drawer${wide ? ' wide' : ''}${dragH !== null ? ' dragging' : ''}`} aria-label="Settings"
-      style={wide ? undefined : { height }}>
+    <section className={`drawer${wide ? ' wide' : ''}${dragH !== null ? ' dragging' : ''}${!isOpen && dragH === null ? ' shut' : ''}`} aria-label="Settings"
+      style={wide ? undefined : { height: `calc(${height}px + env(safe-area-inset-bottom))` }}>
       <div className="drawer-head" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
         onClickCapture={e => { if (dragged.current) { e.stopPropagation(); dragged.current = false; } }}>
         {!wide && (
@@ -87,7 +87,7 @@ export function Drawer<T extends string>({ tabs, wide, initial }: Props<T>) {
             <span />
           </button>
         )}
-        <nav className="drawer-tabs" aria-label="Sections">
+        {(isOpen || dragH !== null) && <nav className="drawer-tabs" aria-label="Sections">
           {tabs.map(t => {
             const on = isOpen && t.id === tab.id;
             return (
@@ -96,7 +96,7 @@ export function Drawer<T extends string>({ tabs, wide, initial }: Props<T>) {
               </button>
             );
           })}
-        </nav>
+        </nav>}
       </div>
       <div className="drawer-body" hidden={!isOpen && dragH === null}>{tab.content}</div>
     </section>

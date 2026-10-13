@@ -85,14 +85,15 @@ From top to bottom; nothing is fixed to the top:
 3. **Color name row:** round ◀ and ▶ buttons that step through the current palette's colors, wrapping around. In between: the color name (Fredoka 18px), the hex code and "14 of 76".
 4. **Palette pills:** one per palette, scrolling sideways. Each shows 3 overlapping sample dots (first, middle, last color), the name and the count. The active pill is raised.
 5. **Color tray:** only the active palette's drops, in an 8-column grid. About 2½ rows are visible; the rest scrolls inside the tray, with a fade mask at the bottom.
-6. **Drawer** (bottom sheet, 30px top corners, shadow cast upward). Closed, only the grab handle and a row of 4 round tab buttons peek out (about 112px):
+6. **Drawer** (bottom sheet, shadow cast upward). Closed, it is nearly hidden: only a thin 32px strip with a small grab handle peeks out, and no buttons. This overrides the canvas, which still draws the 4 tab buttons in the closed state. Open, it has a row of 4 round tab buttons on top:
    - **Images:** round image bubbles plus a dashed + bubble to add PNGs
    - **Colors:** the palette editor (see below)
    - **Tune:** Natural/Stylized, Strength, "Only the main color" switch, then Hue range, Brightness match, Hue variety, Saturation (or Shadow/highlight shift and Contrast in Stylized)
    - **Results:** the output grid of recolored thumbnails; tap one to select that image and color
 
    **How the drawer opens and closes:**
-   - Tapping a tab button opens the drawer on that tab, and the button turns honey. Tapping the open tab, or the handle, closes it.
+   - Tapping or dragging up the handle opens the drawer on the last used tab (Tune at first).
+   - Inside, tapping a tab button switches to it, and the button turns honey. Tapping the open tab, or the handle, closes it.
    - Dragging the handle follows the finger and snaps to closed or open.
    - Open height is about 520px of 844, so the top of the picture stays visible while tuning.
    - When the Colors tab is open it goes taller (about 640px).
