@@ -67,7 +67,7 @@ There is no monospace font any more. Hex codes and file names use Fredoka.
 - **Card:** radius 24px (28px on tablet), `box-shadow: inset 0 2px 0 #fff, 0 5px 0 #d3cfc8, 0 10px 22px rgba(70,60,50,.1)`.
 - **Canvas well** (behind the picture): `--well` with `inset 0 3px 8px rgba(60,50,40,.18)`, radius 16px, inside a card with 10px padding.
 - **Paint drop** (swatch): a circle with the color as `background-color`, plus `background-image: radial-gradient(circle at 34% 28%, rgba(255,255,255,.6) 0, transparent 32%)` and `box-shadow: inset 0 -4px 6px rgba(0,0,0,.22), inset 0 2px 2px rgba(255,255,255,.3), 0 2px 0 rgba(60,50,40,.22)`. Selected: add `0 0 0 3px <surface>, 0 0 0 6px var(--ink)` and `scale(1.08)`. 34px on phone, 40px on tablet.
-- **Pill toggle** (Natural/Stylized, Original/Result): a sunken `--inset` track; the active option is a raised white pill.
+- **Pill toggle** (Natural/Legacy/Stylized, Original/Result): a sunken `--inset` track; the active option is a raised white pill.
 - **Slider:** 14px round track, sage fill up to the value, sunken shadow; 30px round raised knob.
 - **Switch:** 52×30 sage pill with a raised white knob.
 - **Paint strip:** a 18px rounded bar, one flex segment per color. Used for folded palettes.
@@ -88,7 +88,7 @@ From top to bottom; nothing is fixed to the top:
 6. **Drawer** (bottom sheet, shadow cast upward). Closed, it is nearly hidden: only a thin 32px strip with a small grab handle peeks out, and no buttons. This overrides the canvas, which still draws the 4 tab buttons in the closed state. Open, it has a row of 4 round tab buttons on top:
    - **Images:** round image bubbles plus a dashed + bubble to add PNGs
    - **Colors:** the palette editor (see below)
-   - **Tune:** Natural/Stylized, Strength, "Only the main color" switch, then Hue range, Brightness match, Hue variety, Saturation (or Shadow/highlight shift and Contrast in Stylized)
+   - **Tune:** Natural/Legacy/Stylized, Strength, "Only the main color" switch, then Hue range, Brightness match, Hue variety, Saturation, Contrast (Legacy has no Contrast; Stylized has Shadow/highlight shift and Contrast)
    - **Results:** the output grid of recolored thumbnails; tap one to select that image and color
 
    **How the drawer opens and closes:**

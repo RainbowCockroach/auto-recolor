@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, Leaf, RotateCcw, Sparkles, Undo2 } from 'lucide-react';
+import { ChevronDown, History, Leaf, RotateCcw, Sparkles, Undo2 } from 'lucide-react';
 import { hueName, oklchToHex } from '../engine/color';
 import { DEFAULT_SETTINGS, type Settings, type Stats } from '../engine/types';
 import type { LoadedImage } from '../images';
@@ -30,6 +30,7 @@ export function SettingsPanel({ settings: s, image, stats, onChange, onResetPick
       {image && <MainColor image={image} stats={stats} whole={s.scope === 'whole'} onResetPick={onResetPick} />}
       <Pill label="Style" value={s.mode} onChange={v => set('mode', v)} options={[
         { value: 'natural', label: 'Natural', icon: <Leaf size={18} />, title: 'Keeps the original shading. Closest to a real repaint.' },
+        { value: 'legacy', label: 'Legacy', icon: <History size={18} />, title: 'The old Natural mode, to match earlier results.' },
         { value: 'stylized', label: 'Stylized', icon: <Sparkles size={18} />, title: 'Gradient map: cool shadows, your color, warm highlights.' },
       ]} />
       <Slider label="Strength" min={0} max={100} {...percent('strength')} hint="Blend between the original and the new color." />
@@ -41,7 +42,7 @@ export function SettingsPanel({ settings: s, image, stats, onChange, onResetPick
           <Slider id="s-tolerance" label="Hue range" value={s.tolerance} min={8} max={70} format={v => `±${v}°`}
             disabled={s.scope === 'whole'} onChange={v => set('tolerance', v)}
             hint="How far from the main color still counts as the main color." />
-          {s.mode === 'natural' ? (
+          {s.mode !== 'stylized' && (
             <>
               <Slider label="Brightness match" min={0} max={100} {...percent('match')}
                 hint="100%: the typical pixel becomes exactly your color. 0%: keeps the original brightness." />
@@ -49,13 +50,14 @@ export function SettingsPanel({ settings: s, image, stats, onChange, onResetPick
                 hint="How much of the original color variation survives." />
               <Slider label="Saturation" min={30} max={160} {...percent('saturation')} />
             </>
-          ) : (
-            <>
-              <Slider id="s-shift" label="Shadow / highlight shift" value={s.shift} min={0} max={40} format={v => `${v}°`}
-                onChange={v => set('shift', v)} hint="Shadows lean blue and highlights lean yellow." />
-              <Slider label="Contrast" min={40} max={160} {...percent('contrast')}
-                hint="How dark the shadows and how bright the highlights get." />
-            </>
+          )}
+          {s.mode === 'stylized' && (
+            <Slider id="s-shift" label="Shadow / highlight shift" value={s.shift} min={0} max={40} format={v => `${v}°`}
+              onChange={v => set('shift', v)} hint="Shadows lean blue and highlights lean yellow." />
+          )}
+          {s.mode !== 'legacy' && (
+            <Slider label="Contrast" min={40} max={160} {...percent('contrast')}
+              hint={s.mode === 'natural' ? 'How strong the shading is. 100% keeps it as painted.' : 'How dark the shadows and how bright the highlights get.'} />
           )}
         </>
       )}

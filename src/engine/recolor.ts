@@ -8,12 +8,44 @@ const UNTOUCHED = 0.002;
 /** The new color for unique color k at full mask and full strength. */
 type Transform = (k: number) => Lch;
 
+/** Highlights land at most here, so a few pixels past it ease in instead of clipping to white. */
+const CEIL = 0.99;
+const knee = (x: number) => {
+  if (x <= CEIL) return x;
+  const r = (x - CEIL) / (1 - CEIL);
+  return CEIL + (1 - CEIL) * r / (1 + r);
+};
+
 /**
- * Natural: keep each pixel's own lightness and hue offset from the main color, and move the
- * whole group onto the target. A gamma curve sends the group's average lightness to the
- * target's while keeping black and white fixed, so contrast survives.
+ * Natural: what a painter does by hand. Shading is multiplied, so a shadow 30% darker than the
+ * main color stays 30% darker on any target, and highlights are spread over the room left under
+ * white. Extra color (a blush on skin) is added, so it stays "this much pinker" on any tone.
  */
 function natural(t: ColorTable, st: Stats, target: Lch, s: Settings): Transform {
+  // A target at or above the ceiling would turn the highlight slope negative and flip the shading.
+  const m = Math.max(st.meanL, 0.01), T = Math.min(target.l, CEIL);
+  const chroma = target.c * s.saturation;
+  const highSlope = Math.min(T / m, (CEIL - T) / Math.max(st.highL - m, 0.02));
+  // The offset shrinks when the target is duller, so grey or white targets don't keep colored blotches.
+  const keep = Math.min(1, Math.sqrt(chroma / Math.max(st.meanC, 0.001)));
+  const variety = s.variety * (s.scope === 'whole' ? 0.3 : 1);
+  return k => {
+    const l = t.L[k]!;
+    const lit = l <= m ? T * Math.pow(l / m, s.contrast) : knee(T + (l - m) * highSlope * s.contrast);
+    return {
+      l: l + s.match * (lit - l),
+      c: Math.min(Math.max(chroma + (t.C[k]! - st.meanC) * keep, 0), 0.4),
+      h: target.h + wrap180(t.H[k]! - st.hue) * variety,
+    };
+  };
+}
+
+/**
+ * Legacy: the first Natural mode, kept so old results can be reproduced. A gamma curve sends the
+ * group's average lightness to the target's while keeping black and white fixed, which flattens
+ * shading on light targets and crushes it on dark ones.
+ */
+function legacy(t: ColorTable, st: Stats, target: Lch, s: Settings): Transform {
   const gamma = Math.log(clamp(target.l, 0.05, 0.95)) / Math.log(clamp(st.meanL, 0.05, 0.95));
   const ratio = clamp(target.c / Math.max(st.meanC, 0.01), 0, 4) * s.saturation;
   // On the whole image, other parts (a brown trunk next to green leaves) sit far from the main hue.
@@ -68,7 +100,7 @@ export interface RecoloredColors {
 export function recolorColors(t: ColorTable, mask: Float32Array, st: Stats, hex: string, s: Settings, depth: 8 | 16): RecoloredColors {
   const max = depth === 16 ? 65535 : 255;
   const target = hexToOklch(hex);
-  const transform = (s.mode === 'stylized' ? stylized : natural)(t, st, target, s);
+  const transform = (s.mode === 'stylized' ? stylized : s.mode === 'legacy' ? legacy : natural)(t, st, target, s);
   const changed = new Uint8Array(t.size);
   const rgb = new Uint16Array(t.size * 3);
 

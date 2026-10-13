@@ -68,7 +68,7 @@ export function readPalettes(value: unknown): Palette[] | null {
   return out;
 }
 
-const CHOICES: Partial<Record<keyof Settings, readonly string[]>> = { mode: ['natural', 'stylized'], scope: ['main', 'whole'] };
+const CHOICES: Partial<Record<keyof Settings, readonly string[]>> = { mode: ['natural', 'legacy', 'stylized'], scope: ['main', 'whole'] };
 
 /** Keeps saved settings that still make sense; anything else falls back to the default. */
 export function readSettings(value: unknown): Settings {

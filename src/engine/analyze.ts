@@ -1,8 +1,8 @@
 import { DEG, hueDistance, normHue, rgbToOklab, smoothstep } from './color';
 import type { Raster, Settings, Stats } from './types';
 
-/** Pixels below this OKLCH chroma count as grey: they never decide what the main color is. */
-export const GREY_CHROMA = 0.03;
+/** Pixels below this OKLCH chroma count as grey: they never decide what the main color is. Pale skin sits around 0.025. */
+export const GREY_CHROMA = 0.015;
 /** Pixels at or below this alpha (out of 1) don't count toward the image's colors. */
 const VISIBLE_ALPHA = 0.5;
 
@@ -135,7 +135,7 @@ export function colorMask(t: ColorTable, hue: number, s: Settings): Float32Array
     if (s.scope === 'whole') { m[k] = 1; continue; }
     const d = hueDistance(t.H[k]!, hue);
     const byHue = d <= s.tolerance ? 1 : 1 - smoothstep(s.tolerance, s.tolerance * 2, d);
-    m[k] = byHue * smoothstep(0.015, 0.045, t.C[k]!);
+    m[k] = byHue * smoothstep(0.008, 0.02, t.C[k]!);
   }
   return m;
 }

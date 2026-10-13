@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { buildColorTable, colorMask, computeStats, detectMainHue } from '../src/engine/analyze';
-import { hexToOklch, hueName, oklchToHex, rgbToOklab } from '../src/engine/color';
+import { hexToOklch, hueName, mapToSrgb, oklchToHex, rgbToOklab } from '../src/engine/color';
 import { maskPreview, recolor } from '../src/engine/recolor';
 import { DEFAULT_SETTINGS, type Raster, type Settings } from '../src/engine/types';
 
@@ -73,7 +73,7 @@ describe('analysis', () => {
   });
 });
 
-describe.each(['natural', 'stylized'] as const)('%s mode', mode => {
+describe.each(['natural', 'legacy', 'stylized'] as const)('%s mode', mode => {
   const s: Settings = { ...DEFAULT_SETTINGS, mode };
 
   test.each([8, 16] as const)('%i-bit: leaves turn red; trunk, transparency and alpha are untouched', depth => {
@@ -106,8 +106,8 @@ describe.each(['natural', 'stylized'] as const)('%s mode', mode => {
   });
 });
 
-test('natural mode at full brightness match puts the typical leaf on the target lightness', () => {
-  const s: Settings = { ...DEFAULT_SETTINGS, variety: 0 };
+test.each(['natural', 'legacy'] as const)('%s mode at full brightness match puts the typical leaf on the target lightness', mode => {
+  const s: Settings = { ...DEFAULT_SETTINGS, mode, variety: 0 };
   const src = makeTree();
   const { t, st, mask } = analyse(src, s);
   const out = recolor(src, t, mask, st, '#3d7be0', s);
@@ -115,6 +115,96 @@ test('natural mode at full brightness match puts the typical leaf on the target 
   const after = computeStats(buildColorTable(out), target.h, s);
   expect(Math.abs(after.meanL - target.l)).toBeLessThan(0.05);
   expect(hueName(after.hue)).toBe('blue');
+});
+
+/** A 1-pixel-tall strip of one hue: a lightness ramp, then one "blush" pixel with extra chroma. */
+const RAMP = 48, BLUSH = RAMP, RAMP_HUE = 55, RAMP_C = 0.06;
+function makeRamp(l0 = 0.25, l1 = 0.85): Raster {
+  const data = new Uint8Array((RAMP + 1) * 4);
+  for (let i = 0; i <= RAMP; i++) {
+    const l = i < RAMP ? l0 + ((l1 - l0) * i) / (RAMP - 1) : (l0 + l1) / 2;
+    const rgb = mapToSrgb({ mode: 'oklch', l, c: i === BLUSH ? RAMP_C * 2 : RAMP_C, h: RAMP_HUE });
+    data[i * 4] = Math.round(rgb.r * 255); data[i * 4 + 1] = Math.round(rgb.g * 255); data[i * 4 + 2] = Math.round(rgb.b * 255); data[i * 4 + 3] = 255;
+  }
+  return { width: RAMP + 1, height: 1, depth: 8, data };
+}
+const lightnessOf = (r: Raster, i: number) => {
+  const [red, g, b] = pixel(r, i);
+  return rgbToOklab({ mode: 'rgb', r: red! / 255, g: g! / 255, b: b! / 255 }).l;
+};
+const chromaOf = (r: Raster, i: number) => {
+  const [red, g, b] = pixel(r, i);
+  const { a, b: bb } = rgbToOklab({ mode: 'rgb', r: red! / 255, g: g! / 255, b: b! / 255 });
+  return Math.hypot(a, bb);
+};
+const ramped = (hex: string, over: Partial<Settings> = {}) => {
+  const s: Settings = { ...DEFAULT_SETTINGS, scope: 'whole', ...over };
+  const src = makeRamp();
+  const { t, st, mask } = analyse(src, s);
+  return { src, st, out: recolor(src, t, mask, st, hex, s), target: hexToOklch(hex) };
+};
+
+describe('natural mode shading', () => {
+  test('shadows keep their ratio to the main color on dark and light targets', () => {
+    for (const hex of ['#3b2219', '#ffd8c4']) {
+      const { src, st, out, target } = ramped(hex);
+      for (let i = 0; i < RAMP; i++) {
+        const l = lightnessOf(src, i);
+        if (l >= st.meanL) continue;
+        expect(Math.abs(lightnessOf(out, i) / target.l - l / st.meanL)).toBeLessThan(0.03);
+      }
+    }
+  });
+
+  test('highlights stay in order and never clip to white', () => {
+    for (const hex of ['#ffffff', '#f2eee9', '#e8c88a', '#3b2219']) {
+      const { out } = ramped(hex);
+      let prev = -1;
+      for (let i = 0; i < RAMP; i++) {
+        const l = lightnessOf(out, i);
+        expect(l).toBeGreaterThanOrEqual(prev);
+        expect(l).toBeLessThan(0.995);
+        prev = l;
+      }
+    }
+  });
+
+  test('light targets spread the highlights over the room left under white', () => {
+    const { out, target } = ramped('#d9d9d9');
+    // the brightest pixel reaches near white, the typical one sits on the target: detail survives
+    expect(lightnessOf(out, RAMP - 1)).toBeGreaterThan(0.95);
+    expect(Math.abs(lightnessOf(out, Math.floor(RAMP / 2)) - target.l)).toBeLessThan(0.06);
+  });
+
+  test('extra color is added, not multiplied, and fades for grey targets', () => {
+    const base = ramped('#c68642');
+    expect(chromaOf(base.out, BLUSH) - chromaOf(base.out, Math.floor(RAMP / 2))).toBeCloseTo(RAMP_C, 1);
+    const grey = ramped('#9a9a9a');
+    expect(chromaOf(grey.out, BLUSH)).toBeLessThan(0.015);
+  });
+
+  test('contrast scales the shading depth', () => {
+    const flat = ramped('#c68642', { contrast: 0.5 }), full = ramped('#c68642');
+    const depth = (r: Raster) => lightnessOf(r, RAMP / 2) - lightnessOf(r, 0);
+    expect(depth(flat.out)).toBeLessThan(depth(full.out) * 0.75);
+  });
+
+  test('legacy mode is the old curve: light targets flatten the shadows', () => {
+    const now = ramped('#ffd8c4'), old = ramped('#ffd8c4', { mode: 'legacy' });
+    const depth = (r: Raster) => lightnessOf(r, RAMP / 2) - lightnessOf(r, 0);
+    expect(depth(old.out)).toBeLessThan(depth(now.out) * 0.6);
+  });
+});
+
+test('pale colors still count as the main color', () => {
+  const pale = makeRamp(0.88, 0.95);
+  for (let i = 0; i <= RAMP; i++) {
+    const rgb = mapToSrgb({ mode: 'oklch', l: 0.9, c: 0.025, h: RAMP_HUE });
+    pale.data[i * 4] = Math.round(rgb.r * 255); pale.data[i * 4 + 1] = Math.round(rgb.g * 255); pale.data[i * 4 + 2] = Math.round(rgb.b * 255);
+  }
+  const { hue, mask } = analyse(pale, DEFAULT_SETTINGS);
+  expect(hueName(hue)).toBe('orange');
+  expect(mask[0]).toBeGreaterThan(0.99);
 });
 
 test('vivid targets stay inside sRGB without clipping to garbage', () => {
