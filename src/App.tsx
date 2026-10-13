@@ -12,6 +12,7 @@ import { SettingsPanel } from './components/SettingsPanel';
 import { PRIORITY, pool } from './worker/pool';
 
 const readBackground = (v: unknown): Background | null => (v === 'checker' || v === 'light' || v === 'dark' ? v : null);
+const readColorId = (v: unknown): string | null => (typeof v === 'string' ? v : null);
 
 export function App() {
   const [palettes, setPalettes] = usePersistentState('auto-recolor.palettes', readPalettes, defaultPalettes);
@@ -19,7 +20,7 @@ export function App() {
   const [background, setBackground] = usePersistentState('auto-recolor.background', readBackground, (): Background => 'checker');
   const [images, setImages] = useState<LoadedImage[]>([]);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
-  const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
+  const [selectedColorId, setSelectedColorId] = usePersistentState<string | null>('auto-recolor.selectedColor', readColorId, () => null);
   const [showMask, setShowMask] = useState(false);
   const [status, setStatus] = useState('');
   const [note, setNote] = useState('');
