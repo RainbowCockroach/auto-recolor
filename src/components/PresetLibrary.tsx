@@ -31,7 +31,7 @@ export function PresetLibrary({ open, addedIds, onAdd, onClose }: Props) {
         <div className="block-head wrap">
           <h2 id="library-title">Palette library</h2>
           <Segmented name="preset-filter" label="Show" value={filter} onChange={setFilter}
-            options={[{ value: 'all', label: 'All' }, { value: 'hair', label: 'Hair' }, { value: 'furniture', label: 'Furniture' }]} />
+            options={[{ value: 'all', label: 'All' }, { value: 'hair', label: 'Hair' }, { value: 'furniture', label: 'Furniture' }, { value: 'skin', label: 'Skin' }]} />
           <span className="spacer" />
           <button type="button" className="x" aria-label="Close library" onClick={onClose}>×</button>
         </div>
