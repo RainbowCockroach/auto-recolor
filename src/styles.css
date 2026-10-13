@@ -92,7 +92,7 @@ button { cursor: pointer; }
 .chip input[type=color]::-webkit-color-swatch { border: 1px solid rgba(0,0,0,.15); border-radius: 50%; }
 .chip input[type=color]::-moz-color-swatch { border: 1px solid rgba(0,0,0,.15); border-radius: 50%; }
 .cname { width: 7ch; border: 0; background: transparent; font-family: var(--font-mono); font-size: 0.78rem; }
-.hexin { width: 8ch; border: 0; border-left: 1px solid var(--line); padding-left: 6px; background: transparent; font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
+.hexin { width: 9.5ch; border: 0; border-left: 1px solid var(--line); padding-left: 6px; background: transparent; font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
 .hexin:focus { color: var(--fg); }
 .hexin.invalid { color: var(--danger); }
 
@@ -153,6 +153,22 @@ figcaption { display: grid; gap: 4px; font-size: 0.82rem; }
 .fname { display: flex; align-items: center; gap: 5px; min-width: 0; }
 .fname .mono { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 0.7rem; }
 .card .dot { width: 10px; height: 10px; }
+
+/* preset library */
+.library { width: min(760px, calc(100vw - 32px)); max-height: min(86vh, 900px); padding: 0; border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--surface); color: var(--fg); }
+.library::backdrop { background: color-mix(in srgb, var(--fg) 35%, transparent); }
+.library-inner { display: grid; gap: 12px; padding: 18px; }
+.presets { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.preset { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; }
+.preset-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.preset-head strong { font-family: var(--font-display); font-size: 1.02rem; }
+.tag { font-family: var(--font-mono); font-size: 0.7rem; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(14px, 1fr)); gap: 2px; }
+.strip span { aspect-ratio: 1; border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+.preset-desc { font-size: 0.85rem; }
+.credit { font-size: 0.78rem; color: var(--muted); }
+.credit a { color: var(--accent); }
 
 .drop { position: fixed; inset: 0; display: grid; place-items: center; background: color-mix(in srgb, var(--bg) 85%, transparent);
   font-family: var(--font-display); font-size: 1.5rem; z-index: 10; pointer-events: none; }

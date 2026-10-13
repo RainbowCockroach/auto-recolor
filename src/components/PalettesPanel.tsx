@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { makeColor, makePalette, type Palette, type PaletteColor } from '../model';
+import { PresetLibrary } from './PresetLibrary';
 
 interface Props {
   palettes: Palette[];
@@ -38,6 +39,7 @@ function HexField({ id, hex, onCommit }: { id: string; hex: string; onCommit: (h
 }
 
 export function PalettesPanel({ palettes, selectedColorId, onSelectColor, onChange }: Props) {
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const updatePalette = (pid: string, patch: (p: Palette) => Palette) =>
     onChange(palettes.map(p => (p.id === pid ? patch(p) : p)));
   const updateColor = (pid: string, cid: string, patch: Partial<PaletteColor>) =>
@@ -53,12 +55,21 @@ export function PalettesPanel({ palettes, selectedColorId, onSelectColor, onChan
     <section className="block" aria-labelledby="palettes-title">
       <div className="block-head">
         <h2 id="palettes-title">Palettes</h2>
+        <span className="spacer" />
+        <button type="button" className="btn small" onClick={() => setLibraryOpen(true)}>Library…</button>
         <button type="button" className="btn small" onClick={() => {
           const p = makePalette(`palette${palettes.length + 1}`, [['green', '#3fa34d']]);
           onChange([...palettes, p]);
           onSelectColor(p.colors[0]!.id);
         }}>+ Palette</button>
       </div>
+      <PresetLibrary open={libraryOpen} onClose={() => setLibraryOpen(false)}
+        addedIds={new Set(palettes.flatMap(p => (p.presetId ? [p.presetId] : [])))}
+        onAdd={preset => {
+          const p = makePalette(preset.name, preset.colors, preset.id);
+          onChange([...palettes, p]);
+          onSelectColor(p.colors[0]!.id);
+        }} />
       <div className="palettes">
         {palettes.map(p => (
           <div className="palette" key={p.id}>

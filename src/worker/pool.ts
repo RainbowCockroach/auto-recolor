@@ -13,6 +13,8 @@ export const isCancelled = (e: unknown) => e instanceof Cancelled;
 export const PRIORITY = { preview: 0, thumbSelected: 1, thumb: 2, export: 3 } as const;
 
 interface Task {
+  /** The image the task works on; tasks for removed images are dropped. */
+  imageId: string;
   priority: number;
   order: number;
   run: (api: Api) => Promise<unknown>;
@@ -72,7 +74,7 @@ export class WorkerPool {
   run<T>(id: string, run: (api: Api) => Promise<T>, opts: RunOptions): Promise<T> {
     const slot = this.home.get(id);
     if (!slot) return Promise.reject(new Cancelled());
-    return this.enqueue(slot, run, opts);
+    return this.enqueue(slot, id, run, opts);
   }
 
   /** Runs on the least busy worker, copying the image's color table there first if needed. */
@@ -81,7 +83,7 @@ export class WorkerPool {
     if (!owner) return Promise.reject(new Cancelled());
     const load = (s: Slot) => s.queue.length + (s.busy ? 1 : 0);
     const slot = this.slots.reduce((best, s) => (load(s) < load(best) ? s : best), owner);
-    return this.enqueue(slot, async api => {
+    return this.enqueue(slot, id, async api => {
       if (!slot.tables.has(id)) {
         const shared = await owner.api.shareTable(id);
         if (!this.home.has(id)) throw new Cancelled(); // image was removed meanwhile
@@ -92,9 +94,9 @@ export class WorkerPool {
     }, opts);
   }
 
-  private enqueue<T>(slot: Slot, run: (api: Api) => Promise<T>, opts: RunOptions): Promise<T> {
+  private enqueue<T>(slot: Slot, imageId: string, run: (api: Api) => Promise<T>, opts: RunOptions): Promise<T> {
     return new Promise<T>((resolve, reject) => {
-      slot.queue.push({ priority: opts.priority, order: this.order++, run, resolve: resolve as (v: unknown) => void, reject, isStale: opts.isStale });
+      slot.queue.push({ imageId, priority: opts.priority, order: this.order++, run, resolve: resolve as (v: unknown) => void, reject, isStale: opts.isStale });
       void this.pump(slot);
     });
   }
@@ -103,7 +105,7 @@ export class WorkerPool {
     if (slot.busy) return;
     slot.queue.sort((a, b) => a.priority - b.priority || a.order - b.order);
     let task = slot.queue.shift();
-    while (task?.isStale?.()) {
+    while (task && (!this.home.has(task.imageId) || task.isStale?.())) {
       task.reject(new Cancelled());
       task = slot.queue.shift();
     }

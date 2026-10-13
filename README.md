@@ -12,7 +12,7 @@ recolored.zip
     lake_warm_red.png
 ```
 
-Live at https://rainbowcockroach.github.io/auto-recolor/ (deployed from `main` by GitHub Actions).
+Every push to `main` deploys it to https://rainbowcockroach.github.io/auto-recolor/ with GitHub Actions.
 
 ## Using it
 
@@ -36,6 +36,19 @@ src/engine/   color math, PNG, analysis, recoloring (no browser APIs, unit teste
 src/worker/   Web Worker and the pool that schedules work
 src/components/  React UI
 ```
+
+## Palette library credits
+
+The built-in library (`src/presets.ts`) holds palettes from the Sims 4 recolor community. They're free to use with credit:
+
+| Palette | By |
+|---|---|
+| EA hair colors | Electronic Arts / Maxis ([hex list](https://sims4studio.com/thread/14734/linking-maxis-hair-swatches), [2021 additions](https://august-sims.tumblr.com/post/652585724480192512/hair-color-guide-for-sims-4-studio)) |
+| Pooklet | Pooklet ([chart by pixelswirl](https://swirlgoodies.tumblr.com/post/133356161116/pooklet-overhaul-color-chart-requested-by-the)) |
+| Sorbets Remix | [Noodles (noodlescc)](https://noodlescc.tumblr.com/post/636884414311415808/a-navigation-post-for-all-things-sorbets-remix) |
+| Sandwich Naturals, Unnaturals, Neutrals | [WildlyMiniatureSandwich](https://wildlyminiaturesandwich.tumblr.com/post/151507592844/so-here-they-finally-are-all-the-sandwich-colours) |
+| TEA woods | [lunedsims](https://lunedsims.tumblr.com/post/162253820126/tea-a-colour-palette-for-woods) |
+| Chalk Pastels | [cyansimblr](https://maxismatchccworld.tumblr.com/post/639475159431020544/cyansimblr-an-improved-pastels-palette-with) |
 
 ## Development
 

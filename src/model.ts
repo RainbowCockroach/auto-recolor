@@ -1,12 +1,18 @@
 import { DEFAULT_SETTINGS, type Settings } from './engine/types';
 
 export interface PaletteColor { id: string; name: string; hex: string }
-export interface Palette { id: string; name: string; colors: PaletteColor[] }
+export interface Palette {
+  id: string;
+  name: string;
+  colors: PaletteColor[];
+  /** Set when the palette was added from the preset library. */
+  presetId?: string;
+}
 
 const newId = () => crypto.randomUUID();
 export const makeColor = (name: string, hex: string): PaletteColor => ({ id: newId(), name, hex });
-export const makePalette = (name: string, colors: [string, string][]): Palette =>
-  ({ id: newId(), name, colors: colors.map(([n, h]) => makeColor(n, h)) });
+export const makePalette = (name: string, colors: [string, string][], presetId?: string): Palette =>
+  ({ id: newId(), name, colors: colors.map(([n, h]) => makeColor(n, h)), ...(presetId ? { presetId } : {}) });
 
 export const defaultPalettes = (): Palette[] => [
   makePalette('warm', [['red', '#d64541'], ['pink', '#ec8fb8'], ['purple', '#8e5bd0']]),
@@ -54,7 +60,10 @@ export function readPalettes(value: unknown): Palette[] | null {
       if (!c || typeof c.name !== 'string' || !isHex(c.hex)) return null;
       colors.push({ id: typeof c.id === 'string' ? c.id : newId(), name: c.name, hex: c.hex.toLowerCase() });
     }
-    out.push({ id: typeof p.id === 'string' ? p.id : newId(), name: p.name, colors });
+    out.push({
+      id: typeof p.id === 'string' ? p.id : newId(), name: p.name, colors,
+      ...(typeof p.presetId === 'string' ? { presetId: p.presetId } : {}),
+    });
   }
   return out;
 }
