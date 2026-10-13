@@ -16,38 +16,26 @@ export function OutputPanel({ images, palettes, thumbs, selectedImageId, selecte
   const perImage = palettes.reduce((n, p) => n + p.colors.length, 0);
   const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
+  if (!images.length) return <p className="hint">Recolored files show up here.</p>;
+
   return (
-    <section className="block" aria-labelledby="output-title">
-      <div className="block-head wrap">
-        <h2 id="output-title">Output</h2>
-        <span className="hint">
-          {images.length && perImage
-            ? `${plural(images.length, 'image')} × ${plural(perImage, 'color')} = ${plural(images.length * perImage, 'file')}`
-            : 'Recolored files show up here.'}
-        </span>
-      </div>
-      <div className="sheet">
-        {images.map(img => (
-          <div className="sheet-group" key={img.id}>
-            <h3>{img.folder}/</h3>
-            <div className="cards">
-              {outputsFor(img.folder, palettes).map(out => (
-                <button type="button" key={out.color.id} className="card"
-                  aria-current={img.id === selectedImageId && out.color.id === selectedColorId}
-                  onClick={() => onSelect(img.id, out.color.id)}>
-                  <span className="stage">
-                    <BitmapCanvas bitmap={thumbs.get(thumbKey(img.id, out.color.id))} pixelated={Math.max(img.width, img.height) < 200} />
-                  </span>
-                  <span className="fname">
-                    <span className="dot" style={{ background: out.color.hex }} />
-                    <span className="mono" title={out.file}>{out.file}</span>
-                  </span>
-                </button>
-              ))}
-            </div>
+    <div className="results">
+      <p className="count">{plural(images.length, 'image')} × {plural(perImage, 'color')} = {plural(images.length * perImage, 'file')}</p>
+      {images.map(img => (
+        <section key={img.id} className="results-group" aria-label={img.folder}>
+          <h3>{img.folder}/</h3>
+          <div className="thumbs">
+            {outputsFor(img.folder, palettes).map(out => (
+              <button type="button" key={out.color.id} className="thumb" title={out.file} aria-label={out.file}
+                aria-current={img.id === selectedImageId && out.color.id === selectedColorId}
+                onClick={() => onSelect(img.id, out.color.id)}>
+                <BitmapCanvas bitmap={thumbs.get(thumbKey(img.id, out.color.id))} pixelated={Math.max(img.width, img.height) < 200} />
+                <span className="thumb-dot" style={{ background: out.color.hex }} />
+              </button>
+            ))}
           </div>
-        ))}
-      </div>
-    </section>
+        </section>
+      ))}
+    </div>
   );
 }

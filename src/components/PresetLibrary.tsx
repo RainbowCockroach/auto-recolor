@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import { Check, Plus, X } from 'lucide-react';
 import { PRESETS, type Preset, type PresetUse } from '../presets';
-import { Segmented } from './Controls';
+import { Pill } from './Controls';
 
 interface Props {
   open: boolean;
@@ -28,14 +29,13 @@ export function PresetLibrary({ open, addedIds, onAdd, onClose }: Props) {
     <dialog ref={ref} className="library" onClose={onClose} aria-labelledby="library-title"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="library-inner">
-        <div className="block-head wrap">
+        <div className="library-head">
           <h2 id="library-title">Palette library</h2>
-          <Segmented name="preset-filter" label="Show" value={filter} onChange={setFilter}
-            options={[{ value: 'all', label: 'All' }, { value: 'hair', label: 'Hair' }, { value: 'furniture', label: 'Furniture' }]} />
-          <span className="spacer" />
-          <button type="button" className="x" aria-label="Close library" onClick={onClose}>×</button>
+          <button type="button" className="rb sm" aria-label="Close library" title="Close" onClick={onClose}><X size={19} /></button>
         </div>
-        <p className="hint">Ready-made palettes from the Sims 4 recolor community. Adding one copies it into your palettes, where you can rename or trim it.</p>
+        <Pill label="Show" value={filter} onChange={setFilter}
+          options={[{ value: 'all', label: 'All' }, { value: 'hair', label: 'Hair' }, { value: 'furniture', label: 'Furniture' }]} />
+        <p className="hint">Ready-made palettes from the Sims 4 recolor community. Adding one copies it into your palettes.</p>
         <ul className="presets">
           {shown.map(p => {
             const added = addedIds.has(p.id);
@@ -43,11 +43,11 @@ export function PresetLibrary({ open, addedIds, onAdd, onClose }: Props) {
               <li key={p.id} className="preset">
                 <div className="preset-head">
                   <strong>{p.title}</strong>
-                  <span className="tag">{p.colors.length} colors</span>
-                  {p.uses.map(u => <span key={u} className="tag">{u}</span>)}
+                  <span className="count">{p.colors.length}</span>
                   <span className="spacer" />
-                  <button type="button" className={`btn small${added ? '' : ' primary'}`} disabled={added} onClick={() => onAdd(p)}>
-                    {added ? 'Added' : 'Add'}
+                  <button type="button" className={`rb sm${added ? ' flat' : ' honey'}`} disabled={added}
+                    aria-label={added ? `${p.title} added` : `Add ${p.title}`} title={added ? 'Added' : 'Add'} onClick={() => onAdd(p)}>
+                    {added ? <Check size={19} /> : <Plus size={19} />}
                   </button>
                 </div>
                 <div className="strip" aria-hidden="true">

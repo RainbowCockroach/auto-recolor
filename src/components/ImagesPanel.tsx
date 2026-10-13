@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+import { Plus, X } from 'lucide-react';
 import type { LoadedImage } from '../images';
 import { BitmapCanvas } from './BitmapCanvas';
 
@@ -10,29 +12,30 @@ interface Props {
 }
 
 export function ImagesPanel({ images, selectedId, onSelect, onRemove, onAdd }: Props) {
+  const input = useRef<HTMLInputElement>(null);
   return (
-    <section className="block" aria-labelledby="images-title">
-      <div className="block-head">
-        <h2 id="images-title">Images</h2>
-        <label className="btn small" htmlFor="file-input">Add PNGs…</label>
-        <input id="file-input" type="file" accept="image/png" multiple hidden
+    <ul className="bubbles" aria-label="Images">
+      {images.map(img => (
+        <li key={img.id}>
+          <button type="button" className="bub" aria-current={img.id === selectedId}
+            aria-label={img.name} title={`${img.name} · ${img.width}×${img.height}${img.depth === 16 ? ' · 16-bit' : ''}`}
+            onClick={() => onSelect(img.id)}>
+            <BitmapCanvas bitmap={img.thumb} pixelated={Math.max(img.width, img.height) < 200} />
+          </button>
+          {img.id === selectedId && (
+            <button type="button" className="rb xs bub-x" aria-label={`Remove ${img.name}`} title="Remove" onClick={() => onRemove(img.id)}>
+              <X size={14} />
+            </button>
+          )}
+        </li>
+      ))}
+      <li>
+        <button type="button" className="bub add" aria-label="Add PNGs" title="Add PNGs" onClick={() => input.current?.click()}>
+          <Plus size={22} />
+        </button>
+        <input ref={input} type="file" accept="image/png" multiple hidden
           onChange={e => { if (e.target.files?.length) onAdd(e.target.files); e.target.value = ''; }} />
-      </div>
-      {images.length > 0 && (
-        <ul className="images">
-          {images.map(img => (
-            <li key={img.id} aria-current={img.id === selectedId}>
-              <button type="button" className="image-pick" onClick={() => onSelect(img.id)}>
-                <BitmapCanvas bitmap={img.thumb} />
-                <span className="iname">{img.name}</span>
-                <span className="meta">{img.width}×{img.height}{img.depth === 16 ? ' · 16-bit' : ''}</span>
-              </button>
-              <button type="button" className="x" aria-label={`Remove ${img.name}`} onClick={() => onRemove(img.id)}>×</button>
-            </li>
-          ))}
-        </ul>
-      )}
-      <p className="hint">Drop PNG files anywhere on the page.</p>
-    </section>
+      </li>
+    </ul>
   );
 }

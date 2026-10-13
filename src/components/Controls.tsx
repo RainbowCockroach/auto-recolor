@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 interface SliderProps {
   id: string;
@@ -8,40 +8,54 @@ interface SliderProps {
   min: number;
   max: number;
   format: (v: number) => string;
-  hint?: ReactNode;
+  hint?: string;
   disabled?: boolean;
   onChange: (v: number) => void;
 }
 
 export function Slider({ id, label, value, min, max, format, hint, disabled, onChange }: SliderProps) {
+  const fill = { '--v': `${((value - min) / (max - min)) * 100}%` } as CSSProperties;
   return (
-    <div className={`ctl${disabled ? ' off' : ''}`}>
+    <div className={`ctl${disabled ? ' off' : ''}`} title={hint}>
       <label htmlFor={id}>{label} <output htmlFor={id}>{format(value)}</output></label>
-      <input id={id} type="range" min={min} max={max} step={1} value={value} disabled={disabled}
+      <input id={id} type="range" min={min} max={max} step={1} value={value} disabled={disabled} style={fill}
         onChange={e => onChange(Number(e.target.value))} />
-      {hint && <small>{hint}</small>}
     </div>
   );
 }
 
-interface SegmentedProps<T extends string> {
-  name: string;
+interface PillProps<T extends string> {
   label: string;
   value: T;
-  options: { value: T; label: string }[];
+  options: { value: T; label: string; icon?: ReactNode; title?: string }[];
   onChange: (v: T) => void;
 }
 
-export function Segmented<T extends string>({ name, label, value, options, onChange }: SegmentedProps<T>) {
+/** A sunken track with the chosen option raised. */
+export function Pill<T extends string>({ label, value, options, onChange }: PillProps<T>) {
   return (
-    <div className="seg" role="radiogroup" aria-label={label}>
+    <div className="pill" role="radiogroup" aria-label={label}>
       {options.map(o => (
-        <span key={o.value}>
-          <input type="radio" name={name} id={`${name}-${o.value}`} value={o.value}
-            checked={value === o.value} onChange={() => onChange(o.value)} />
-          <label htmlFor={`${name}-${o.value}`}>{o.label}</label>
-        </span>
+        <button key={o.value} type="button" role="radio" aria-checked={value === o.value} title={o.title}
+          className={value === o.value ? 'on' : undefined} onClick={() => onChange(o.value)}>
+          {o.icon}{o.label}
+        </button>
       ))}
     </div>
+  );
+}
+
+interface SwitchProps {
+  label: string;
+  checked: boolean;
+  title?: string;
+  onChange: (v: boolean) => void;
+}
+
+export function Switch({ label, checked, title, onChange }: SwitchProps) {
+  return (
+    <button type="button" className="switch-row" role="switch" aria-checked={checked} title={title} onClick={() => onChange(!checked)}>
+      {label}<span className="switch" aria-hidden="true" />
+    </button>
   );
 }

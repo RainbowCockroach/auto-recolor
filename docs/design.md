@@ -78,7 +78,7 @@ From top to bottom; nothing is fixed to the top:
 
 1. **Picture card** (takes all spare height). Inside the canvas well:
    - the recolored result, large
-   - top-left: a 64px round **original bubble** with a small pipette badge; tap it to pick the color to replace
+   - top-left: a 64px round **original bubble** with a small pipette badge. Tapping it starts pick mode: the bubble gets a honey ring, the big picture shows the original with a "Tap the color to replace" chip, and the next tap on the picture picks the color and ends pick mode
    - top-right: round **Background** and **Mask** buttons
    - bottom-right: round **View big** button (opens the viewer)
 2. **Download row:** a wide honey "Download N" pill plus a round **Save to folder** button. The folder button only shows when `canSaveToFolder()`.
