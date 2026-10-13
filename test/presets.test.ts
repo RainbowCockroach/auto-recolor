@@ -16,7 +16,7 @@ test('presets have the documented number of colors', () => {
   expect(counts).toEqual({
     'ea-hair': 24, pooklet: 45, 'sorbets-remix': 76,
     'sandwich-naturals': 20, 'sandwich-unnaturals': 35, 'sandwich-neutrals': 20,
-    'lunedsims-tea': 18, 'cyansimblr-chalk-pastels': 32,
+    'lunedsims-tea': 18, 'cyansimblr-chalk-pastels': 32, 'monk-skin-tone': 10,
   });
 });
 

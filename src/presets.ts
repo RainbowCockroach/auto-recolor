@@ -1,8 +1,8 @@
-// Ready-made palettes from the Sims 4 recolor community, offered in the preset library.
+// Ready-made palettes, mostly from the Sims 4 recolor community, offered in the preset library.
 // Community palettes are free to use with credit, so each one names its creator and source,
 // and the library shows that credit next to it.
 
-export type PresetUse = 'hair' | 'furniture';
+export type PresetUse = 'hair' | 'furniture' | 'skin';
 
 export interface Preset {
   id: string;
@@ -164,5 +164,17 @@ export const PRESETS: Preset[] = [
       '#f4c77d', '#fcf7c8', '#e2faed', '#4fbcc6', '#93ca9b', '#edb765', '#83c7a2', '#bca78c',
       '#ddd1bf', '#fd9469', '#f6c2ac', '#d17c75', '#9599c5', '#e7a5a6', '#f3d686', '#ff778b',
     ].map((hex, i): [string, string] => [`chalk ${String(i + 1).padStart(2, '0')}`, hex]),
+  },
+  {
+    id: 'monk-skin-tone',
+    name: 'monk',
+    title: 'Monk Skin Tone scale',
+    uses: ['skin'],
+    description: 'Ten skin tones from lightest to deepest, made to cover the full range of human skin (CC BY 4.0).',
+    credit: { by: 'Dr. Ellis Monk / Google (CC BY 4.0)', url: 'https://skintone.google/get-started' },
+    colors: [
+      '#f6ede4', '#f3e7db', '#f7ead0', '#eadaba', '#d7bd96',
+      '#a07e56', '#825c43', '#604134', '#3a312a', '#292420',
+    ].map((hex, i): [string, string] => [`mst ${String(i + 1).padStart(2, '0')}`, hex]),
   },
 ];

@@ -34,8 +34,8 @@ export function PresetLibrary({ open, addedIds, onAdd, onClose }: Props) {
           <button type="button" className="rb sm" aria-label="Close library" title="Close" onClick={onClose}><X size={19} /></button>
         </div>
         <Pill label="Show" value={filter} onChange={setFilter}
-          options={[{ value: 'all', label: 'All' }, { value: 'hair', label: 'Hair' }, { value: 'furniture', label: 'Furniture' }]} />
-        <p className="hint">Ready-made palettes from the Sims 4 recolor community. Adding one copies it into your palettes.</p>
+          options={[{ value: 'all', label: 'All' }, { value: 'hair', label: 'Hair' }, { value: 'furniture', label: 'Furniture' }, { value: 'skin', label: 'Skin' }]} />
+        <p className="hint">Ready-made palettes, each credited to its maker. Adding one copies it into your palettes.</p>
         <ul className="presets">
           {shown.map(p => {
             const added = addedIds.has(p.id);
