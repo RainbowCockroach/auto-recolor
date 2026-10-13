@@ -34,6 +34,10 @@ Dependencies point one way: UI (`App.tsx`, `components/`) → glue (`hooks.ts`, 
 - **App state** (`App.tsx`, `hooks.ts`) — palettes, settings and preview background persist to localStorage (`auto-recolor.*` keys) via `usePersistentState` with a validating reader (`readPalettes`, `readSettings`); bad data falls back to defaults. `usePreview` / `useThumbs` re-render through the pool and mark old work stale on every change. `model.ts` owns palette types and output naming (`slug`, `folderName`, `outputsFor` with `-2`, `-3` dedupe).
 - **Presets** (`presets.ts`, `PresetLibrary.tsx`) — ready-made community palettes; each must carry `credit` (creator + source URL), which the UI shows.
 
+## UI design
+
+The approved UI ("Cozy Studio": neutral greys, round 3D buttons, picture and palette first, settings in a pull-up drawer on phones) is described in `docs/design.md`, which links the design canvas artifact. Follow it for any UI work.
+
 ## Conventions
 
 - **Comments:** only where the code can't speak for itself (a non-obvious why, a gotcha). One short line, plain words. No comments restating the code.
