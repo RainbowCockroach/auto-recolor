@@ -94,7 +94,7 @@ From top to bottom; nothing is fixed to the top. Keep it compact: 8–10px page 
 5. **Drawer** (bottom sheet, shadow cast upward). Closed, it is nearly hidden: only a thin 32px semi-transparent (frosted) strip with a small grab handle peeks out, and no buttons. This overrides the canvas, which still draws the 4 tab buttons in the closed state. Open, it has a row of 4 round tab buttons on top:
    - **Images:** round image bubbles plus a dashed + bubble to add PNGs
    - **Colors:** the palette editor (see below)
-   - **Tune:** Natural/Legacy/Stylized, then a grid of dials (tap one to open the big gauge): Strength, Hue range, Brightness, Hue variety, Saturation, Contrast (Legacy has no Contrast; Stylized has Shadow shift and Contrast instead of the three middle ones). All dials show at once, with no "More settings" fold. Then the "Only the main color" switch, and a footer with a short "Tap a dial to adjust" hint and a round Reset all button
+   - **Tune:** first a tinted "main color" box: the detected color, the colors found in the image, and the "Only the main color" switch, since they belong together. Then Natural/Legacy/Stylized with a round Reset all button beside it, then a grid of dials (tap one to open the big gauge): Strength, Hue range, Brightness, Hue variety, Saturation, Contrast (Legacy has no Contrast; Stylized has Shadow shift and Contrast instead of the three middle ones). All dials show at once, with no "More settings" fold. Phone dials are a bit smaller (68px) to keep the drawer short
    - **Results:** the output grid of recolored thumbnails; tap one to select that image and color
 
    **How the drawer opens and closes:**

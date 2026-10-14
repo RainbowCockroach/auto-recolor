@@ -63,28 +63,29 @@ export function SettingsPanel({ settings: s, image, stats, focus, inlineGauge, o
 
   return (
     <div className="tune">
-      {image && <MainColor image={image} stats={stats} whole={s.scope === 'whole'} onPickHue={onPickHue} />}
-      <Pill label="Style" value={s.mode} onChange={v => set('mode', v)} options={[
-        { value: 'natural', label: 'Natural', icon: <Leaf size={18} />, title: 'Keeps the original shading. Closest to a real repaint.' },
-        { value: 'legacy', label: 'Legacy', icon: <History size={18} />, title: 'The old Natural mode, to match earlier results.' },
-        { value: 'stylized', label: 'Stylized', icon: <Sparkles size={18} />, title: 'Gradient map: cool shadows, your color, warm highlights.' },
-      ]} />
+      <section className="main-box" aria-label="Main color">
+        {image && <MainColor image={image} stats={stats} whole={s.scope === 'whole'} onPickHue={onPickHue} />}
+        <Switch label="Only the main color" checked={s.scope === 'main'} onChange={v => set('scope', v ? 'main' : 'whole')}
+          title="Leaves other parts, like a trunk or pot, untouched." />
+      </section>
+
+      <div className="tune-row">
+        <Pill label="Style" value={s.mode} onChange={v => set('mode', v)} options={[
+          { value: 'natural', label: 'Natural', icon: <Leaf size={18} />, title: 'Keeps the original shading. Closest to a real repaint.' },
+          { value: 'legacy', label: 'Legacy', icon: <History size={18} />, title: 'The old Natural mode, to match earlier results.' },
+          { value: 'stylized', label: 'Stylized', icon: <Sparkles size={18} />, title: 'Gradient map: cool shadows, your color, warm highlights.' },
+        ]} />
+        <button type="button" className="rb sm" aria-label="Reset all" title="Reset all"
+          onClick={() => onChange({ ...DEFAULT_SETTINGS, mode: s.mode, scope: s.scope })}>
+          <RotateCcw size={19} />
+        </button>
+      </div>
 
       <div className="dials">
         {dials.map(d => (
           <DialButton key={d.key} label={d.label} value={d.value} min={d.min} max={d.max} format={d.format} hint={d.hint}
             disabled={d.disabled} active={d.key === focus} onClick={() => onFocus(d.key)} />
         ))}
-      </div>
-
-      <Switch label="Only the main color" checked={s.scope === 'main'} onChange={v => set('scope', v ? 'main' : 'whole')}
-        title="Leaves other parts, like a trunk or pot, untouched." />
-      <div className="tune-foot">
-        <span className="hint">Tap a dial to adjust</span>
-        <button type="button" className="rb sm" aria-label="Reset all" title="Reset all"
-          onClick={() => onChange({ ...DEFAULT_SETTINGS, mode: s.mode, scope: s.scope })}>
-          <RotateCcw size={19} />
-        </button>
       </div>
     </div>
   );
