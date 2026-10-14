@@ -2,27 +2,64 @@ import { History, Leaf, RotateCcw, Sparkles, Undo2 } from 'lucide-react';
 import { hueDistance, hueName, oklchToHex } from '../engine/color';
 import { DEFAULT_SETTINGS, type Settings, type Stats } from '../engine/types';
 import type { LoadedImage } from '../images';
-import { Dial, Pill, Switch } from './Controls';
+import { DialButton, Pill, Switch } from './Controls';
+import { Gauge, type DialSpec } from './Gauge';
+
+export type DialKey = Exclude<keyof Settings, 'mode' | 'scope'>;
+
+const pct = (v: number) => `${v}%`;
+
+/** The number settings shown as dials for the current mode, in display order. */
+export function tuneDials(s: Settings, onChange: (next: Settings) => void): DialSpec<DialKey>[] {
+  const set = (key: DialKey, v: number) => onChange({ ...s, [key]: v });
+  const percent = (key: 'strength' | 'match' | 'variety' | 'saturation' | 'contrast', label: string, min: number, max: number, hint?: string): DialSpec<DialKey> => ({
+    key, label, min, max, hint,
+    value: Math.round(s[key] * 100),
+    initial: Math.round(DEFAULT_SETTINGS[key] * 100),
+    format: pct,
+    onChange: v => set(key, v / 100),
+  });
+  const degrees = (key: 'tolerance' | 'shift', label: string, min: number, max: number, format: (v: number) => string, hint: string, disabled?: boolean): DialSpec<DialKey> => ({
+    key, label, min, max, format, hint, disabled, value: s[key], initial: DEFAULT_SETTINGS[key], onChange: v => set(key, v),
+  });
+
+  return [
+    percent('strength', 'Strength', 0, 100, 'Blend between the original and the new color.'),
+    degrees('tolerance', 'Hue range', 8, 70, v => `±${v}°`, 'How far from the main color still counts as the main color.', s.scope === 'whole'),
+    ...(s.mode !== 'stylized' ? [
+      percent('match', 'Brightness', 0, 100, '100%: the typical pixel becomes exactly your color. 0%: keeps the original brightness.'),
+      percent('variety', 'Hue variety', 0, 150, 'How much of the original color variation survives.'),
+      percent('saturation', 'Saturation', 30, 160),
+    ] : [
+      degrees('shift', 'Shadow shift', 0, 40, v => `${v}°`, 'Shadows lean blue and highlights lean yellow.'),
+    ]),
+    ...(s.mode !== 'legacy' ? [
+      percent('contrast', 'Contrast', 40, 160,
+        s.mode === 'natural' ? 'How strong the shading is. 100% keeps it as painted.' : 'How dark the shadows and how bright the highlights get.'),
+    ] : []),
+  ];
+}
 
 interface Props {
   settings: Settings;
   image: LoadedImage | null;
   stats: Stats | undefined;
+  /** The dial open in the big gauge. */
+  focus: DialKey | null;
+  /** Wide screens show the gauge here, in place of the dials; phones show it in its own sheet. */
+  inlineGauge: boolean;
+  onFocus: (key: DialKey | null) => void;
   onChange: (next: Settings) => void;
   /** A hue to use instead of the detected one, or null to go back to auto-detect. */
   onPickHue: (hue: number | null) => void;
 }
 
-const pct = (v: number) => `${v}%`;
-
-export function SettingsPanel({ settings: s, image, stats, onChange, onPickHue }: Props) {
+export function SettingsPanel({ settings: s, image, stats, focus, inlineGauge, onFocus, onChange, onPickHue }: Props) {
   const set = <K extends keyof Settings>(key: K, value: Settings[K]) => onChange({ ...s, [key]: value });
-  const percent = (key: 'strength' | 'match' | 'variety' | 'saturation' | 'contrast') => ({
-    value: Math.round(s[key] * 100),
-    initial: Math.round(DEFAULT_SETTINGS[key] * 100),
-    format: pct,
-    onChange: (v: number) => set(key, v / 100),
-  });
+  const dials = tuneDials(s, onChange);
+  const active = dials.find(d => d.key === focus);
+
+  if (inlineGauge && active) return <Gauge dials={dials} active={active} onFocus={onFocus} onClose={() => onFocus(null)} />;
 
   return (
     <div className="tune">
@@ -34,33 +71,16 @@ export function SettingsPanel({ settings: s, image, stats, onChange, onPickHue }
       ]} />
 
       <div className="dials">
-        <Dial label="Strength" min={0} max={100} {...percent('strength')} hint="Blend between the original and the new color." />
-        <Dial label="Hue range" value={s.tolerance} initial={DEFAULT_SETTINGS.tolerance} min={8} max={70} format={v => `±${v}°`}
-          disabled={s.scope === 'whole'} onChange={v => set('tolerance', v)}
-          hint="How far from the main color still counts as the main color." />
-        {s.mode !== 'stylized' && (
-          <>
-            <Dial label="Brightness" min={0} max={100} {...percent('match')}
-              hint="100%: the typical pixel becomes exactly your color. 0%: keeps the original brightness." />
-            <Dial label="Hue variety" min={0} max={150} {...percent('variety')}
-              hint="How much of the original color variation survives." />
-            <Dial label="Saturation" min={30} max={160} {...percent('saturation')} />
-          </>
-        )}
-        {s.mode === 'stylized' && (
-          <Dial label="Shadow shift" value={s.shift} initial={DEFAULT_SETTINGS.shift} min={0} max={40} format={v => `${v}°`}
-            onChange={v => set('shift', v)} hint="Shadows lean blue and highlights lean yellow." />
-        )}
-        {s.mode !== 'legacy' && (
-          <Dial label="Contrast" min={40} max={160} {...percent('contrast')}
-            hint={s.mode === 'natural' ? 'How strong the shading is. 100% keeps it as painted.' : 'How dark the shadows and how bright the highlights get.'} />
-        )}
+        {dials.map(d => (
+          <DialButton key={d.key} label={d.label} value={d.value} min={d.min} max={d.max} format={d.format} hint={d.hint}
+            disabled={d.disabled} active={d.key === focus} onClick={() => onFocus(d.key)} />
+        ))}
       </div>
 
       <Switch label="Only the main color" checked={s.scope === 'main'} onChange={v => set('scope', v ? 'main' : 'whole')}
         title="Leaves other parts, like a trunk or pot, untouched." />
       <div className="tune-foot">
-        <span className="hint">Drag up or down · double-tap to reset</span>
+        <span className="hint">Tap a dial to adjust</span>
         <button type="button" className="rb sm" aria-label="Reset all" title="Reset all"
           onClick={() => onChange({ ...DEFAULT_SETTINGS, mode: s.mode, scope: s.scope })}>
           <RotateCcw size={19} />

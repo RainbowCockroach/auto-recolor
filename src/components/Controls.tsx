@@ -1,93 +1,33 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
-interface DialProps {
+interface DialButtonProps {
   label: string;
   /** Value in the dial's own units (percent for percentages). */
   value: number;
   min: number;
   max: number;
-  /** Double-tap goes back to this. */
-  initial: number;
   format: (v: number) => string;
   hint?: string;
   disabled?: boolean;
-  onChange: (v: number) => void;
+  active?: boolean;
+  onClick: () => void;
 }
 
-/** Drag distance in px that turns the dial from min to max. */
-const FULL_TURN = 160;
-const DOUBLE_TAP_MS = 350;
-
-/** A round knob: drag up/down (or sideways), scroll, or use the arrow keys; double-tap resets. */
-export function Dial({ label, value, min, max, initial, format, hint, disabled, onChange }: DialProps) {
-  const knob = useRef<HTMLButtonElement>(null);
-  const drag = useRef<{ x: number; y: number; v: number; moved: boolean } | null>(null);
-  const lastTap = useRef(0);
-  const [held, setHeld] = useState(false);
-  const span = max - min;
-  const set = (v: number) => {
-    const next = Math.max(min, Math.min(max, Math.round(v)));
-    if (next !== value) onChange(next);
-  };
-
-  // React's onWheel is passive, so it can't stop the drawer from scrolling under the dial
-  useEffect(() => {
-    const el = knob.current;
-    if (!el) return;
-    const wheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const next = Math.max(min, Math.min(max, value + (e.deltaY < 0 ? 1 : -1) * Math.max(1, Math.round((max - min) / 50))));
-      if (next !== value) onChange(next);
-    };
-    el.addEventListener('wheel', wheel, { passive: false });
-    return () => el.removeEventListener('wheel', wheel);
-  }, [value, min, max, onChange]);
-
-  const frac = (value - min) / span;
+/** A small round dial that shows a value; tapping it opens the big gauge. */
+export function DialButton({ label, value, min, max, format, hint, disabled, active, onClick }: DialButtonProps) {
+  const frac = (value - min) / (max - min);
   const style = { '--a': `${frac * 270}deg`, '--r': `${frac * 270 - 135}deg` } as CSSProperties;
-  const keys: Record<string, number> = { ArrowUp: 1, ArrowRight: 1, ArrowDown: -1, ArrowLeft: -1, PageUp: 10, PageDown: -10 };
-
   return (
-    <div className={`dial${disabled ? ' off' : ''}`} title={hint} style={style}>
-      <div className="dial-wrap">
-        <span className="dial-arc" aria-hidden="true" />
-        <button ref={knob} type="button" className={`knob${held ? ' held' : ''}`} role="slider" disabled={disabled}
-          aria-label={label} aria-valuemin={min} aria-valuemax={max} aria-valuenow={value} aria-valuetext={format(value)}
-          onPointerDown={e => {
-            try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* synthetic pointers can't be captured */ }
-            drag.current = { x: e.clientX, y: e.clientY, v: value, moved: false };
-            setHeld(true);
-          }}
-          onPointerMove={e => {
-            const d = drag.current;
-            if (!d) return;
-            const delta = d.y - e.clientY + (e.clientX - d.x);
-            if (Math.abs(delta) > 3) d.moved = true;
-            set(d.v + (delta * span) / FULL_TURN);
-          }}
-          onPointerUp={() => {
-            const d = drag.current;
-            drag.current = null;
-            setHeld(false);
-            if (!d || d.moved) return;
-            const now = Date.now();
-            if (now - lastTap.current < DOUBLE_TAP_MS) { set(initial); lastTap.current = 0; } else lastTap.current = now;
-          }}
-          onPointerCancel={() => { drag.current = null; setHeld(false); }}
-          onKeyDown={e => {
-            const step = keys[e.key];
-            const to = step !== undefined ? value + step : e.key === 'Home' ? min : e.key === 'End' ? max : null;
-            if (to === null) return;
-            e.preventDefault();
-            set(to);
-          }}>
-          <span className="knurl" />
-          <span className="face">{format(value)}</span>
-          <span className="needle" />
-        </button>
-      </div>
-      <span className="dial-label">{label}</span>
-    </div>
+    <button type="button" className={`dial${active ? ' on' : ''}`} title={hint} style={style} disabled={disabled}
+      aria-label={`${label} ${format(value)}`} aria-pressed={active} onClick={onClick}>
+      <span className="dial-wrap" aria-hidden="true">
+        <span className="dial-arc" />
+        <span className="knurl" />
+        <span className="face">{format(value)}</span>
+        <span className="needle" />
+      </span>
+      <span className="dial-label" aria-hidden="true">{label}</span>
+    </button>
   );
 }
 

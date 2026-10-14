@@ -19,6 +19,7 @@
   --font-display: "Fredoka Variable", "Avenir Next Rounded", system-ui, sans-serif;
   --font-body: "Nunito Variable", "Segoe UI", system-ui, sans-serif;
   --peek: 32px;
+  --gauge-h: 372px;
   color-scheme: light;
 }
 
@@ -70,23 +71,40 @@ button { cursor: pointer; }
   border: 0; border-radius: 999px; background: none; color: var(--soft); font-weight: 700; white-space: nowrap; }
 .pill button.on { color: var(--ink); background: linear-gradient(#fff, #f1eee9); box-shadow: 0 3px 0 #cbc6be, 0 5px 8px rgba(60,50,40,.12); }
 
-.dial { --d: 96px; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
-.dial.off { opacity: .4; }
-.dial-wrap { position: relative; width: var(--d); height: var(--d); }
+.dial { --d: 80px; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; padding: 4px 0; border: 0; background: none; color: var(--ink); }
+.dial:disabled { opacity: .4; cursor: default; }
+.dial-wrap { position: relative; display: block; width: var(--d); height: var(--d); }
 .dial-arc { position: absolute; inset: 0; border-radius: 50%;
   background: conic-gradient(from 225deg, var(--sage) 0 var(--a), #dcd8d1 var(--a) 270deg, transparent 270deg);
   -webkit-mask-image: radial-gradient(closest-side, transparent calc(100% - 6px), #000 calc(100% - 5px)); mask-image: radial-gradient(closest-side, transparent calc(100% - 6px), #000 calc(100% - 5px)); }
-.knob { position: absolute; inset: 8px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: ns-resize; touch-action: none; transition: transform .12s; }
-.knob:disabled { cursor: default; }
-.knob:focus-visible { outline-offset: 8px; }
-.knob.held { transform: scale(1.06); }
-.knurl, .needle { position: absolute; inset: 0; border-radius: 50%; transform: rotate(var(--r)); }
-.knurl { background: repeating-conic-gradient(#efece7 0 5deg, #cdc8bf 5deg 10deg); box-shadow: 0 4px 0 #bdb7ae, 0 8px 14px rgba(70,60,50,.2); }
-.face { position: absolute; inset: 7px; display: grid; place-items: center; border-radius: 50%; font: 600 1.05rem var(--font-display); color: var(--ink);
+.knurl, .needle { position: absolute; inset: 8px; border-radius: 50%; transform: rotate(var(--r)); }
+.knurl { background: repeating-conic-gradient(#efece7 0 5deg, #cdc8bf 5deg 10deg); box-shadow: 0 3px 0 #bdb7ae, 0 6px 10px rgba(70,60,50,.18); }
+.face { position: absolute; inset: 14px; display: grid; place-items: center; border-radius: 50%; font: 600 0.95rem var(--font-display); color: var(--ink);
   background: radial-gradient(circle at 40% 30%, #fff, #ece9e4 70%); box-shadow: inset 0 2px 0 #fff, inset 0 -3px 5px rgba(0,0,0,.08), 0 1px 3px rgba(60,50,40,.25); }
+.dial.on .face { box-shadow: 0 0 0 3px var(--card), 0 0 0 6px var(--ink); }
 .needle { pointer-events: none; }
-.needle::before { content: ""; position: absolute; left: 50%; top: 11px; width: 5px; height: 12px; margin-left: -2.5px; border-radius: 3px; background: var(--ink); }
+.needle::before { content: ""; position: absolute; left: 50%; top: 2px; width: 4px; height: 8px; margin-left: -2px; border-radius: 2px; background: var(--ink); }
 .dial-label { font-weight: 700; font-size: 0.85rem; text-align: center; line-height: 1.15; }
+
+.gauge-panel { display: flex; flex-direction: column; gap: 6px; }
+.gauge-head { display: flex; align-items: center; gap: 10px; }
+.gauge-title { flex: 1; min-width: 0; display: grid; justify-items: center; gap: 6px; }
+.gauge-title strong { font: 600 1.15rem var(--font-display); }
+.gauge-dots { display: flex; gap: 6px; }
+.gauge-dots i { width: 7px; height: 7px; border-radius: 50%; background: #d2cdc5; }
+.gauge-dots i.on { background: var(--ink); }
+.gauge { display: block; width: 100%; max-width: 380px; margin: 0 auto; padding: 0; border: 0; border-radius: 24px; background: none; cursor: ew-resize; touch-action: none; }
+.gauge svg { display: block; width: 100%; height: auto; overflow: visible; }
+.gauge-panel.off .gauge, .gauge-panel.off .gauge-foot .hint { opacity: .4; }
+.g-tick { stroke: #bdb7ae; stroke-linecap: round; }
+.g-track { fill: none; stroke: #dcd8d1; stroke-width: 26; stroke-linecap: round; }
+.g-fill { stroke: var(--sage); }
+.g-thumb { fill: var(--card); stroke: var(--line); stroke-width: 2; filter: drop-shadow(0 3px 2px rgba(70,60,50,.25)); }
+.g-value { font: 600 50px var(--font-display); fill: var(--ink); }
+.g-end { font: 600 13px var(--font-display); fill: var(--muted); }
+.gauge-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.gauge-foot .hint { text-align: center; font-weight: 700; }
+.gauge-foot .rb { width: 56px; height: 56px; }
 
 .switch-row { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 44px; padding: 0; border: 0; background: none; font-weight: 700; text-align: left; }
 .switch { position: relative; width: 52px; height: 30px; flex: none; border-radius: 999px; background: #d6d2cb; box-shadow: inset 0 2px 4px rgba(0,0,0,.18); transition: background .15s; }
@@ -164,8 +182,15 @@ button { cursor: pointer; }
 /* drawer */
 .drawer { position: fixed; z-index: 5; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; overflow: hidden;
   padding-bottom: env(safe-area-inset-bottom); border-radius: 30px 30px 0 0; background: var(--card);
-  box-shadow: inset 0 2px 0 #fff, 0 -4px 0 #d8d4cd, 0 -12px 30px rgba(60,50,40,.16); transition: height .25s ease; --ring-gap: var(--inner); }
+  box-shadow: inset 0 2px 0 #fff, 0 -4px 0 #d8d4cd, 0 -12px 30px rgba(60,50,40,.16); transition: height .25s ease, transform .25s ease; --ring-gap: var(--inner); }
 .drawer.dragging { transition: none; }
+.drawer.away { transform: translateY(100%); }
+.gauge-sheet { position: fixed; z-index: 6; left: 0; right: 0; bottom: 0; padding: 14px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 30px 30px 0 0;
+  background: var(--card); box-shadow: inset 0 2px 0 #fff, 0 -4px 0 #d8d4cd, 0 -12px 30px rgba(60,50,40,.16); animation: rise .25s ease; }
+@keyframes rise { from { transform: translateY(100%); } }
+/* while the gauge sheet is up, the picture takes all the room above it */
+.app.tuning .export, .app.tuning .picker { display: none; }
+.app.tuning .center { padding-bottom: calc(var(--gauge-h) + env(safe-area-inset-bottom)); }
 .drawer.shut { border-radius: 20px 20px 0 0; background: rgba(246,245,242,.5); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 -4px 12px rgba(60,50,40,.06); }
 .drawer-head { flex: none; touch-action: none; }
@@ -288,8 +313,6 @@ body:has(.viewer[open]) { overflow: hidden; }
 .drawer.wide { position: static; height: auto; min-height: 0; border-radius: 28px; padding-bottom: 0; box-shadow: inset 0 2px 0 #fff, 0 5px 0 #d3cfc8, 0 10px 22px rgba(70,60,50,.1); }
 .drawer.wide .drawer-tabs { padding: 18px 10px 14px; }
 .drawer.wide .tab { font-size: 0.8rem; }
-.drawer.wide .dial { --d: 86px; }
-.drawer.wide .face { font-size: 0.95rem; }
 .drawer.wide .tab .rb { width: 48px; height: 48px; }
 .wide .toast { bottom: 32px; }
 

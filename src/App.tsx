@@ -7,11 +7,12 @@ import { loadImage, unloadImage, withHue, type LoadedImage } from './images';
 import { defaultPalettes, outputsFor, readPalettes, readSettings, type Palette } from './model';
 import { ColorPicker } from './components/ColorPicker';
 import { Drawer, type DrawerTab } from './components/Drawer';
+import { Gauge } from './components/Gauge';
 import { ImagesPanel } from './components/ImagesPanel';
 import { OutputPanel } from './components/OutputPanel';
 import { PalettesPanel } from './components/PalettesPanel';
 import { PreviewPanel, type Background } from './components/PreviewPanel';
-import { SettingsPanel } from './components/SettingsPanel';
+import { SettingsPanel, tuneDials, type DialKey } from './components/SettingsPanel';
 import { PRIORITY, pool } from './worker/pool';
 
 const readBackground = (v: unknown): Background | null => (v === 'checker' || v === 'light' || v === 'dark' ? v : null);
@@ -45,6 +46,7 @@ export function App() {
   const [undo, setUndo] = useState<{ label: string; palettes: Palette[] } | null>(null);
   const [saving, setSaving] = useState<{ done: number; total: number } | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [tuning, setTuning] = useState<DialKey | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const wide = useWide();
 
@@ -174,7 +176,7 @@ export function App() {
       <PalettesPanel palettes={palettes} selectedColorId={target?.color.id ?? null} onSelectColor={setSelectedColorId} onChange={changePalettes} />
     ) },
     { id: 'tune', label: 'Tune', icon: <SlidersHorizontal size={19} />, content: (
-      <SettingsPanel settings={settings} image={image} stats={preview?.stats} onChange={setSettings}
+      <SettingsPanel settings={settings} image={image} stats={preview?.stats} focus={tuning} inlineGauge={wide} onFocus={setTuning} onChange={setSettings}
         onPickHue={hue => { if (image) setPickedHue(image.id, hue); }} />
     ) },
     { id: 'results', label: 'Results', icon: <LayoutGrid size={19} />, content: (
@@ -202,10 +204,14 @@ export function App() {
     </div>
   );
 
+  const dials = tuneDials(settings, setSettings);
+  // phones show the gauge in its own sheet, with the drawer out of the way and the picture taller
+  const sheetDial = wide ? undefined : dials.find(d => d.key === tuning);
+
   const message = undo ? `Removed ${undo.label}` : status;
 
   return (
-    <div className={`app${wide ? ' wide' : ''}`}>
+    <div className={`app${wide ? ' wide' : ''}${sheetDial ? ' tuning' : ''}`}>
       {wide && <aside className="rail">{imagesPanel}</aside>}
 
       <main className="center">
@@ -219,7 +225,12 @@ export function App() {
           actions={wide ? undefined : exportRow} />
       </main>
 
-      <Drawer tabs={wide ? tabs.filter(t => t.id !== 'images') : tabs} wide={wide} initial="tune" />
+      <Drawer tabs={wide ? tabs.filter(t => t.id !== 'images') : tabs} wide={wide} initial="tune" away={!!sheetDial} />
+      {sheetDial && (
+        <section className="gauge-sheet" aria-label="Adjust">
+          <Gauge dials={dials} active={sheetDial} onFocus={setTuning} onClose={() => setTuning(null)} />
+        </section>
+      )}
 
       {message && (
         <div className="toast" role="status">

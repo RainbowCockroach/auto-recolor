@@ -14,6 +14,8 @@ interface Props<T extends string> {
   /** Wide screens show it as a side panel that is always open. */
   wide: boolean;
   initial: T;
+  /** Slid out of view (phones), keeping its tab and open state for when it comes back. */
+  away?: boolean;
 }
 
 /** Closed, only a thin strip with the grab handle peeks out. */
@@ -30,7 +32,7 @@ const useViewportHeight = () => {
 };
 
 /** Phone: a sheet pulled up from the bottom. Wide screens: a tabbed side panel. */
-export function Drawer<T extends string>({ tabs, wide, initial }: Props<T>) {
+export function Drawer<T extends string>({ tabs, wide, initial, away }: Props<T>) {
   const [tabId, setTabId] = useState<T>(initial);
   const [open, setOpen] = useState(false);
   const [dragH, setDragH] = useState<number | null>(null);
@@ -77,7 +79,7 @@ export function Drawer<T extends string>({ tabs, wide, initial }: Props<T>) {
   };
 
   return (
-    <section className={`drawer${wide ? ' wide' : ''}${dragH !== null ? ' dragging' : ''}${!isOpen && dragH === null ? ' shut' : ''}`} aria-label="Settings"
+    <section className={`drawer${wide ? ' wide' : ''}${dragH !== null ? ' dragging' : ''}${!isOpen && dragH === null ? ' shut' : ''}${away && !wide ? ' away' : ''}`} aria-label="Settings" inert={away && !wide}
       style={wide ? undefined : { height: `calc(${height}px + env(safe-area-inset-bottom))` }}>
       <div className="drawer-head" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
         onClickCapture={e => { if (dragged.current) { e.stopPropagation(); dragged.current = false; } }}>
