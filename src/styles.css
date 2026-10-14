@@ -52,8 +52,6 @@ button { cursor: pointer; }
 .honey, .rb.honey { color: var(--honey-ink); background: linear-gradient(var(--honey-top), var(--honey-bottom));
   box-shadow: inset 0 2px 0 rgba(255,255,255,.6), inset 0 -2px 0 rgba(0,0,0,.07), 0 3px 0 var(--honey-base), 0 5px 9px rgba(150,100,30,.2); }
 .rb.honey:active:not(:disabled) { box-shadow: inset 0 2px 0 rgba(255,255,255,.6), 0 1px 0 var(--honey-base); }
-.text-btn { display: inline-flex; align-items: center; gap: 4px; border: 0; background: none; padding: 8px 10px; color: var(--soft); font-weight: 700; font-size: 0.9rem; }
-.flip { transform: rotate(180deg); }
 
 .card { background: var(--card); border-radius: 24px; box-shadow: inset 0 2px 0 #fff, 0 3px 0 #d3cfc8, 0 6px 14px rgba(70,60,50,.08); }
 
@@ -72,16 +70,23 @@ button { cursor: pointer; }
   border: 0; border-radius: 999px; background: none; color: var(--soft); font-weight: 700; white-space: nowrap; }
 .pill button.on { color: var(--ink); background: linear-gradient(#fff, #f1eee9); box-shadow: 0 3px 0 #cbc6be, 0 5px 8px rgba(60,50,40,.12); }
 
-.ctl { display: grid; gap: 4px; }
-.ctl label { display: flex; justify-content: space-between; align-items: baseline; font-weight: 700; }
-.ctl output { font: 600 0.9rem var(--font-display); color: var(--muted); }
-.ctl.off { opacity: .45; }
-input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 14px; margin: 10px 0 6px; border-radius: 999px;
-  background: linear-gradient(90deg, var(--sage) var(--v, 50%), #e2dfda var(--v, 50%)); box-shadow: inset 0 2px 3px rgba(60,50,40,.2); }
-input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; border-radius: 50%;
-  background: linear-gradient(#fff, #e8e4de); box-shadow: inset 0 2px 0 #fff, 0 3px 0 #bdb7ae, 0 5px 8px rgba(60,50,40,.25); }
-input[type=range]::-moz-range-thumb { width: 30px; height: 30px; border: 0; border-radius: 50%;
-  background: linear-gradient(#fff, #e8e4de); box-shadow: 0 3px 0 #bdb7ae, 0 5px 8px rgba(60,50,40,.25); }
+.dial { --d: 96px; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+.dial.off { opacity: .4; }
+.dial-wrap { position: relative; width: var(--d); height: var(--d); }
+.dial-arc { position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(from 225deg, var(--sage) 0 var(--a), #dcd8d1 var(--a) 270deg, transparent 270deg);
+  -webkit-mask-image: radial-gradient(closest-side, transparent calc(100% - 6px), #000 calc(100% - 5px)); mask-image: radial-gradient(closest-side, transparent calc(100% - 6px), #000 calc(100% - 5px)); }
+.knob { position: absolute; inset: 8px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: ns-resize; touch-action: none; transition: transform .12s; }
+.knob:disabled { cursor: default; }
+.knob:focus-visible { outline-offset: 8px; }
+.knob.held { transform: scale(1.06); }
+.knurl, .needle { position: absolute; inset: 0; border-radius: 50%; transform: rotate(var(--r)); }
+.knurl { background: repeating-conic-gradient(#efece7 0 5deg, #cdc8bf 5deg 10deg); box-shadow: 0 4px 0 #bdb7ae, 0 8px 14px rgba(70,60,50,.2); }
+.face { position: absolute; inset: 7px; display: grid; place-items: center; border-radius: 50%; font: 600 1.05rem var(--font-display); color: var(--ink);
+  background: radial-gradient(circle at 40% 30%, #fff, #ece9e4 70%); box-shadow: inset 0 2px 0 #fff, inset 0 -3px 5px rgba(0,0,0,.08), 0 1px 3px rgba(60,50,40,.25); }
+.needle { pointer-events: none; }
+.needle::before { content: ""; position: absolute; left: 50%; top: 11px; width: 5px; height: 12px; margin-left: -2.5px; border-radius: 3px; background: var(--ink); }
+.dial-label { font-weight: 700; font-size: 0.85rem; text-align: center; line-height: 1.15; }
 
 .switch-row { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 44px; padding: 0; border: 0; background: none; font-weight: 700; text-align: left; }
 .switch { position: relative; width: 52px; height: 30px; flex: none; border-radius: 999px; background: #d6d2cb; box-shadow: inset 0 2px 4px rgba(0,0,0,.18); transition: background .15s; }
@@ -184,7 +189,8 @@ input[type=range]::-moz-range-thumb { width: 30px; height: 30px; border: 0; bord
 .tune { display: flex; flex-direction: column; gap: 16px; }
 .main-color { display: flex; align-items: center; gap: 8px; color: var(--soft); font-size: 0.9rem; }
 .main-color b { color: var(--ink); }
-.tune-foot { display: flex; align-items: center; justify-content: space-between; }
+.dials { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 0; }
+.tune-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 
 .bubbles { list-style: none; margin: 0; padding: 4px 0; display: flex; flex-wrap: wrap; gap: 16px; }
 .bubbles li { position: relative; }
@@ -279,6 +285,8 @@ body:has(.viewer[open]) { overflow: hidden; }
 .drawer.wide { position: static; height: auto; min-height: 0; border-radius: 28px; padding-bottom: 0; box-shadow: inset 0 2px 0 #fff, 0 5px 0 #d3cfc8, 0 10px 22px rgba(70,60,50,.1); }
 .drawer.wide .drawer-tabs { padding: 18px 10px 14px; }
 .drawer.wide .tab { font-size: 0.8rem; }
+.drawer.wide .dial { --d: 86px; }
+.drawer.wide .face { font-size: 0.95rem; }
 .drawer.wide .tab .rb { width: 48px; height: 48px; }
 .wide .toast { bottom: 32px; }
 

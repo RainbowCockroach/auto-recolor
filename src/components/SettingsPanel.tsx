@@ -1,9 +1,8 @@
-import { useState } from 'react';
-import { ChevronDown, History, Leaf, RotateCcw, Sparkles, Undo2 } from 'lucide-react';
+import { History, Leaf, RotateCcw, Sparkles, Undo2 } from 'lucide-react';
 import { hueName, oklchToHex } from '../engine/color';
 import { DEFAULT_SETTINGS, type Settings, type Stats } from '../engine/types';
 import type { LoadedImage } from '../images';
-import { Pill, Slider, Switch } from './Controls';
+import { Dial, Pill, Switch } from './Controls';
 
 interface Props {
   settings: Settings;
@@ -16,11 +15,10 @@ interface Props {
 const pct = (v: number) => `${v}%`;
 
 export function SettingsPanel({ settings: s, image, stats, onChange, onResetPick }: Props) {
-  const [more, setMore] = useState(false);
   const set = <K extends keyof Settings>(key: K, value: Settings[K]) => onChange({ ...s, [key]: value });
   const percent = (key: 'strength' | 'match' | 'variety' | 'saturation' | 'contrast') => ({
-    id: `s-${key}`,
     value: Math.round(s[key] * 100),
+    initial: Math.round(DEFAULT_SETTINGS[key] * 100),
     format: pct,
     onChange: (v: number) => set(key, v / 100),
   });
@@ -33,40 +31,36 @@ export function SettingsPanel({ settings: s, image, stats, onChange, onResetPick
         { value: 'legacy', label: 'Legacy', icon: <History size={18} />, title: 'The old Natural mode, to match earlier results.' },
         { value: 'stylized', label: 'Stylized', icon: <Sparkles size={18} />, title: 'Gradient map: cool shadows, your color, warm highlights.' },
       ]} />
-      <Slider label="Strength" min={0} max={100} {...percent('strength')} hint="Blend between the original and the new color." />
+
+      <div className="dials">
+        <Dial label="Strength" min={0} max={100} {...percent('strength')} hint="Blend between the original and the new color." />
+        <Dial label="Hue range" value={s.tolerance} initial={DEFAULT_SETTINGS.tolerance} min={8} max={70} format={v => `±${v}°`}
+          disabled={s.scope === 'whole'} onChange={v => set('tolerance', v)}
+          hint="How far from the main color still counts as the main color." />
+        {s.mode !== 'stylized' && (
+          <>
+            <Dial label="Brightness" min={0} max={100} {...percent('match')}
+              hint="100%: the typical pixel becomes exactly your color. 0%: keeps the original brightness." />
+            <Dial label="Hue variety" min={0} max={150} {...percent('variety')}
+              hint="How much of the original color variation survives." />
+            <Dial label="Saturation" min={30} max={160} {...percent('saturation')} />
+          </>
+        )}
+        {s.mode === 'stylized' && (
+          <Dial label="Shadow shift" value={s.shift} initial={DEFAULT_SETTINGS.shift} min={0} max={40} format={v => `${v}°`}
+            onChange={v => set('shift', v)} hint="Shadows lean blue and highlights lean yellow." />
+        )}
+        {s.mode !== 'legacy' && (
+          <Dial label="Contrast" min={40} max={160} {...percent('contrast')}
+            hint={s.mode === 'natural' ? 'How strong the shading is. 100% keeps it as painted.' : 'How dark the shadows and how bright the highlights get.'} />
+        )}
+      </div>
+
       <Switch label="Only the main color" checked={s.scope === 'main'} onChange={v => set('scope', v ? 'main' : 'whole')}
         title="Leaves other parts, like a trunk or pot, untouched." />
-
-      {more && (
-        <>
-          <Slider id="s-tolerance" label="Hue range" value={s.tolerance} min={8} max={70} format={v => `±${v}°`}
-            disabled={s.scope === 'whole'} onChange={v => set('tolerance', v)}
-            hint="How far from the main color still counts as the main color." />
-          {s.mode !== 'stylized' && (
-            <>
-              <Slider label="Brightness match" min={0} max={100} {...percent('match')}
-                hint="100%: the typical pixel becomes exactly your color. 0%: keeps the original brightness." />
-              <Slider label="Hue variety" min={0} max={150} {...percent('variety')}
-                hint="How much of the original color variation survives." />
-              <Slider label="Saturation" min={30} max={160} {...percent('saturation')} />
-            </>
-          )}
-          {s.mode === 'stylized' && (
-            <Slider id="s-shift" label="Shadow / highlight shift" value={s.shift} min={0} max={40} format={v => `${v}°`}
-              onChange={v => set('shift', v)} hint="Shadows lean blue and highlights lean yellow." />
-          )}
-          {s.mode !== 'legacy' && (
-            <Slider label="Contrast" min={40} max={160} {...percent('contrast')}
-              hint={s.mode === 'natural' ? 'How strong the shading is. 100% keeps it as painted.' : 'How dark the shadows and how bright the highlights get.'} />
-          )}
-        </>
-      )}
-
       <div className="tune-foot">
-        <button type="button" className="text-btn" aria-expanded={more} onClick={() => setMore(!more)}>
-          {more ? 'Fewer settings' : 'More settings'} <ChevronDown size={18} className={more ? 'flip' : undefined} />
-        </button>
-        <button type="button" className="rb sm flat" aria-label="Reset sliders" title="Reset sliders"
+        <span className="hint">Drag up or down · double-tap to reset</span>
+        <button type="button" className="rb sm" aria-label="Reset all" title="Reset all"
           onClick={() => onChange({ ...DEFAULT_SETTINGS, mode: s.mode, scope: s.scope })}>
           <RotateCcw size={19} />
         </button>
