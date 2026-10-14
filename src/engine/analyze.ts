@@ -69,33 +69,78 @@ export function buildColorTable(raster: Raster): ColorTable {
   return { size, rgb: Uint16Array.from(rgbList), L, A, B, C, H, weight: Float64Array.from(weightList), visible, pixelColor };
 }
 
+/** A hue the image could be recolored by: where it sits, what it looks like, how much of the picture it covers. */
+export interface HueCandidate {
+  hue: number;
+  /** Mean lightness and chroma of the colors around this hue, for a swatch. */
+  l: number;
+  c: number;
+  /** Share of visible pixels within 20° of this hue. */
+  share: number;
+}
+
+const MAX_CANDIDATES = 5;
+/** A candidate must cover at least this share of the visible pixels. */
+const MIN_CANDIDATE_SHARE = 0.02;
+/** Candidates have to be at least this far apart in hue. */
+const CANDIDATE_GAP = 30;
+/** Hue band around a peak used to refine it and to describe it. */
+const PEAK_BAND = 20;
+
 /**
- * The main color is the peak of a hue histogram over visible, colorful pixels, weighted by chroma
- * so vivid areas count more than dull ones. Returns null when the image has no real color.
+ * Hues the image could be recolored by, strongest first. Each is a peak of a hue histogram over
+ * visible, colorful pixels, weighted by chroma so vivid areas count more than dull ones.
+ * The first one is the main color. Empty when the image has no real color.
  */
-export function detectMainHue(t: ColorTable): number | null {
-  const bins = new Float64Array(72); // 5° each
+export function detectMainHues(t: ColorTable): HueCandidate[] {
+  const bins = new Float64Array(72); // 5° each, pixels × chroma
+  const counts = new Float64Array(72); // 5° each, pixels
   for (let k = 0; k < t.size; k++) {
-    if (t.weight[k]! > 0 && t.C[k]! > GREY_CHROMA) bins[Math.floor(t.H[k]! / 5) % 72]! += t.weight[k]! * t.C[k]!;
-  }
-  let peak = 0, best = 0;
-  for (let i = 0; i < 72; i++) {
-    const v = bins[(i + 71) % 72]! + 2 * bins[i]! + bins[(i + 1) % 72]!;
-    if (v > best) { best = v; peak = i; }
-  }
-  if (best === 0) return null;
-  // refine to a weighted circular mean around the peak
-  const center = peak * 5 + 2.5;
-  let sx = 0, sy = 0;
-  for (let k = 0; k < t.size; k++) {
-    if (t.weight[k]! > 0 && t.C[k]! > GREY_CHROMA && hueDistance(t.H[k]!, center) < 20) {
-      const w = t.weight[k]! * t.C[k]!;
-      sx += w * Math.cos(t.H[k]! * DEG);
-      sy += w * Math.sin(t.H[k]! * DEG);
+    if (t.weight[k]! > 0 && t.C[k]! > GREY_CHROMA) {
+      const i = Math.floor(t.H[k]! / 5) % 72;
+      bins[i]! += t.weight[k]! * t.C[k]!;
+      counts[i]! += t.weight[k]!;
     }
   }
-  return normHue(Math.atan2(sy, sx) / DEG);
+  const smooth = Float64Array.from(bins, (_, i) => bins[(i + 71) % 72]! + 2 * bins[i]! + bins[(i + 1) % 72]!);
+  const bandCount = (i: number) => {
+    let n = 0;
+    for (let d = -PEAK_BAND / 5; d <= PEAK_BAND / 5; d++) n += counts[(i + d + 72) % 72]!;
+    return n;
+  };
+  if (Math.max(...smooth) === 0) return [];
+
+  // strongest bins first, skipping small areas and any too close to a stronger one
+  const order = Array.from(smooth.keys()).sort((a, b) => smooth[b]! - smooth[a]!);
+  const peaks: number[] = [];
+  for (const i of order) {
+    if (peaks.length === MAX_CANDIDATES || smooth[i] === 0) break;
+    const center = i * 5 + 2.5;
+    if (peaks.length && bandCount(i) < MIN_CANDIDATE_SHARE * t.visible) continue;
+    if (peaks.every(p => hueDistance(p, center) >= CANDIDATE_GAP)) peaks.push(center);
+  }
+
+  const candidates: HueCandidate[] = [];
+  for (const center of peaks) {
+    let sx = 0, sy = 0, sumL = 0, sumC = 0, n = 0;
+    for (let k = 0; k < t.size; k++) {
+      const w = t.weight[k]!;
+      if (w > 0 && t.C[k]! > GREY_CHROMA && hueDistance(t.H[k]!, center) < PEAK_BAND) {
+        const wc = w * t.C[k]!;
+        sx += wc * Math.cos(t.H[k]! * DEG);
+        sy += wc * Math.sin(t.H[k]! * DEG);
+        sumL += w * t.L[k]!; sumC += wc; n += w;
+      }
+    }
+    const hue = normHue(Math.atan2(sy, sx) / DEG);
+    if (candidates.some(c => hueDistance(c.hue, hue) < CANDIDATE_GAP / 2)) continue;
+    candidates.push({ hue, l: sumL / n, c: sumC / n, share: t.visible ? n / t.visible : 0 });
+  }
+  return candidates;
 }
+
+/** The main color: the strongest hue in the image, or null when it has no real color. */
+export const detectMainHue = (t: ColorTable): number | null => detectMainHues(t)[0]?.hue ?? null;
 
 const inBand = (t: ColorTable, k: number, hue: number, s: Settings) =>
   s.scope === 'whole' || (t.C[k]! > GREY_CHROMA && hueDistance(t.H[k]!, hue) <= s.tolerance);

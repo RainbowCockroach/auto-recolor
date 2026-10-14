@@ -1,4 +1,5 @@
 import * as Comlink from 'comlink';
+import type { HueCandidate } from './engine/analyze';
 import { folderName } from './model';
 import { PRIORITY, pool } from './worker/pool';
 
@@ -10,7 +11,9 @@ export interface LoadedImage {
   width: number;
   height: number;
   depth: 8 | 16;
-  /** Detected main hue, or null if the image has no real color. */
+  /** Hues the image could be recolored by, strongest first. Empty if the image has no real color. */
+  autoHues: HueCandidate[];
+  /** The strongest of them, or null if the image has no real color. */
   autoHue: number | null;
   /** Hue the person clicked on, overriding the detected one. */
   pickedHue: number | null;

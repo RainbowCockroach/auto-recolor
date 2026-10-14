@@ -144,6 +144,7 @@ Where things that had no spot in the boards now go:
 - **Export progress:** inside the Download pill (e.g. "12/103"), with a thin honey progress bar under it.
 - **Status and warning messages** ("Saved 103 files into …", load errors, "That spot is transparent…"): the same dark ink toast pill as Undo, shown briefly above the drawer (phone) or at the bottom of the center column (tablet).
 - **Main color info and reset:** the first line of the Tune tab shows a small dot and "Main color: green · 62%", plus "auto" or a round reset button when the color was picked by hand ("Back to auto-detect"). On tablet, the same line appears under the original bubble.
+- **Main color choices:** under that line, when the image has more than one real color, a row of paint drops (30px) shows the hues found in the image, strongest first; the first is picked by default. Tapping one uses that hue; tapping the first goes back to auto. Each drop's title gives the hue name and coverage ("brown · 23%").
 - **"Recoloring…":** a small card-colored pill in the middle of the picture well.
 
 The Mode descriptions ("Keeps shading" / "Gradient map") can shrink to the pill labels; put any longer explanation in `title` tooltips.

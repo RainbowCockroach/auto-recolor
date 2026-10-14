@@ -4,7 +4,7 @@
 // only needs the image's table of unique colors, so other workers can borrow a copy of the
 // table and compute variants in parallel. The owner then writes the new colors into pixels.
 import * as Comlink from 'comlink';
-import { buildColorTable, colorMask, computeStats, detectMainHue, GREY_CHROMA, type ColorTable } from '../engine/analyze';
+import { buildColorTable, colorMask, computeStats, detectMainHues, GREY_CHROMA, type ColorTable } from '../engine/analyze';
 import { decodePng, encodePng, toRgba8 } from '../engine/png';
 import { applyColors, maskPreview, recolorColors, type RecoloredColors } from '../engine/recolor';
 import type { Raster, Settings, Stats } from '../engine/types';
@@ -67,7 +67,8 @@ const api = {
       bitmap(rgba, raster.width, raster.height),
       bitmap(rgba, raster.width, raster.height, THUMB_SIDE),
     ]);
-    const result = { width: raster.width, height: raster.height, depth: raster.depth, autoHue: detectMainHue(table), full, thumb };
+    const autoHues = detectMainHues(table);
+    const result = { width: raster.width, height: raster.height, depth: raster.depth, autoHues, autoHue: autoHues[0]?.hue ?? null, full, thumb };
     return Comlink.transfer(result, [full, thumb]);
   },
 

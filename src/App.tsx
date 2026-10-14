@@ -175,7 +175,7 @@ export function App() {
     ) },
     { id: 'tune', label: 'Tune', icon: <SlidersHorizontal size={19} />, content: (
       <SettingsPanel settings={settings} image={image} stats={preview?.stats} onChange={setSettings}
-        onResetPick={() => { if (image) setPickedHue(image.id, null); }} />
+        onPickHue={hue => { if (image) setPickedHue(image.id, hue); }} />
     ) },
     { id: 'results', label: 'Results', icon: <LayoutGrid size={19} />, content: (
       <OutputPanel images={images} palettes={palettes} thumbs={thumbs} selectedImageId={image?.id ?? null}

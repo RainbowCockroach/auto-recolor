@@ -1,5 +1,5 @@
 import { History, Leaf, RotateCcw, Sparkles, Undo2 } from 'lucide-react';
-import { hueName, oklchToHex } from '../engine/color';
+import { hueDistance, hueName, oklchToHex } from '../engine/color';
 import { DEFAULT_SETTINGS, type Settings, type Stats } from '../engine/types';
 import type { LoadedImage } from '../images';
 import { Dial, Pill, Switch } from './Controls';
@@ -9,12 +9,13 @@ interface Props {
   image: LoadedImage | null;
   stats: Stats | undefined;
   onChange: (next: Settings) => void;
-  onResetPick: () => void;
+  /** A hue to use instead of the detected one, or null to go back to auto-detect. */
+  onPickHue: (hue: number | null) => void;
 }
 
 const pct = (v: number) => `${v}%`;
 
-export function SettingsPanel({ settings: s, image, stats, onChange, onResetPick }: Props) {
+export function SettingsPanel({ settings: s, image, stats, onChange, onPickHue }: Props) {
   const set = <K extends keyof Settings>(key: K, value: Settings[K]) => onChange({ ...s, [key]: value });
   const percent = (key: 'strength' | 'match' | 'variety' | 'saturation' | 'contrast') => ({
     value: Math.round(s[key] * 100),
@@ -25,7 +26,7 @@ export function SettingsPanel({ settings: s, image, stats, onChange, onResetPick
 
   return (
     <div className="tune">
-      {image && <MainColor image={image} stats={stats} whole={s.scope === 'whole'} onResetPick={onResetPick} />}
+      {image && <MainColor image={image} stats={stats} whole={s.scope === 'whole'} onPickHue={onPickHue} />}
       <Pill label="Style" value={s.mode} onChange={v => set('mode', v)} options={[
         { value: 'natural', label: 'Natural', icon: <Leaf size={18} />, title: 'Keeps the original shading. Closest to a real repaint.' },
         { value: 'legacy', label: 'Legacy', icon: <History size={18} />, title: 'The old Natural mode, to match earlier results.' },
@@ -69,23 +70,36 @@ export function SettingsPanel({ settings: s, image, stats, onChange, onResetPick
   );
 }
 
-interface MainColorProps { image: LoadedImage; stats: Stats | undefined; whole: boolean; onResetPick: () => void }
+interface MainColorProps { image: LoadedImage; stats: Stats | undefined; whole: boolean; onPickHue: (hue: number | null) => void }
 
-function MainColor({ image, stats, whole, onResetPick }: MainColorProps) {
+function MainColor({ image, stats, whole, onPickHue }: MainColorProps) {
   if (image.autoHue === null && image.pickedHue === null) {
     return <p className="main-color">No clear main color. Tap the original to pick one.</p>;
   }
   const dot = stats ? oklchToHex({ l: stats.meanL, c: stats.meanC, h: image.hue }) : 'transparent';
+  const picked = (i: number) => (image.pickedHue === null ? i === 0 : hueDistance(image.pickedHue, image.autoHues[i]!.hue) < 0.5);
   return (
     <div className="main-color">
-      <span className="dot" style={{ background: dot }} />
-      <span>
-        Main color: <b>{hueName(image.hue)}</b>
-        {stats && !whole && ` · ${Math.round(stats.coverage * 100)}%`}
-      </span>
-      {image.pickedHue === null
-        ? <span className="tag">auto</span>
-        : <button type="button" className="rb xs" aria-label="Back to auto-detect" title="Back to auto-detect" onClick={onResetPick}><Undo2 size={15} /></button>}
+      <div className="main-color-line">
+        <span className="dot" style={{ background: dot }} />
+        <span>
+          Main color: <b>{hueName(image.hue)}</b>
+          {stats && !whole && ` · ${Math.round(stats.coverage * 100)}%`}
+        </span>
+        {image.pickedHue === null
+          ? <span className="tag">auto</span>
+          : <button type="button" className="rb xs" aria-label="Back to auto-detect" title="Back to auto-detect" onClick={() => onPickHue(null)}><Undo2 size={15} /></button>}
+      </div>
+      {image.autoHues.length > 1 && (
+        <div className="hue-picks" role="radiogroup" aria-label="Colors found in the image">
+          {image.autoHues.map((c, i) => (
+            <button key={c.hue} type="button" className="drop" role="radio" aria-checked={picked(i)}
+              aria-label={`${hueName(c.hue)}, ${Math.round(c.share * 100)}%`} title={`${hueName(c.hue)} · ${Math.round(c.share * 100)}%`}
+              style={{ backgroundColor: oklchToHex({ l: c.l, c: c.c, h: c.hue }) }}
+              onClick={() => onPickHue(i === 0 ? null : c.hue)} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

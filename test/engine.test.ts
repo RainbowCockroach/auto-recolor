@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { buildColorTable, colorMask, computeStats, detectMainHue } from '../src/engine/analyze';
+import { buildColorTable, colorMask, computeStats, detectMainHue, detectMainHues } from '../src/engine/analyze';
 import { hexToOklch, hueName, mapToSrgb, oklchToHex, rgbToOklab } from '../src/engine/color';
 import { maskPreview, recolor } from '../src/engine/recolor';
 import { DEFAULT_SETTINGS, type Raster, type Settings } from '../src/engine/types';
@@ -65,6 +65,16 @@ describe('analysis', () => {
     const { t, mask } = analyse(makeTree(), DEFAULT_SETTINGS);
     expect(mask[t.pixelColor[LEAF]!]).toBeGreaterThan(0.99);
     expect(mask[t.pixelColor[TRUNK]!]).toBe(0);
+  });
+  test('offers the trunk as a second choice, main color first', () => {
+    const t = buildColorTable(makeTree());
+    const hues = detectMainHues(t);
+    expect(hues.length).toBeGreaterThanOrEqual(2);
+    expect(hues[0]!.hue).toBe(detectMainHue(t));
+    expect(hueName(hues[0]!.hue)).toBe('green');
+    expect(hues.map(h => hueName(h.hue))).toContain(hueName(pixelHue(makeTree(), TRUNK)));
+    expect(hues[0]!.share).toBeGreaterThan(hues[1]!.share);
+    for (let i = 1; i < hues.length; i++) expect(Math.abs(hues[i]!.hue - hues[0]!.hue)).toBeGreaterThan(15);
   });
   test('a grey image has no main color', () => {
     const grey = makeTree();

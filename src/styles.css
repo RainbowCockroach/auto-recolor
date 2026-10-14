@@ -187,8 +187,11 @@ button { cursor: pointer; }
 
 /* ---------- panels ---------- */
 .tune { display: flex; flex-direction: column; gap: 16px; }
-.main-color { display: flex; align-items: center; gap: 8px; color: var(--soft); font-size: 0.9rem; }
+.main-color { display: flex; flex-direction: column; gap: 10px; color: var(--soft); font-size: 0.9rem; }
+.main-color-line { display: flex; align-items: center; gap: 8px; }
 .main-color b { color: var(--ink); }
+.hue-picks { display: flex; gap: 10px; padding: 6px 3px; }
+.hue-picks .drop { width: 30px; height: 30px; }
 .dials { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 0; }
 .tune-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 
