@@ -16,6 +16,7 @@ npx vitest run -t "part of test name"     # one test by name
 npm run typecheck                # tsc --noEmit
 npm run lint                     # eslint .
 npm run build                    # typecheck + vite build into dist/
+npm run guide:images             # redraw the guide's pictures in public/guide (run after engine changes)
 ```
 
 CI (`.github/workflows/pages.yml`) runs typecheck, lint, test, build on every push to `main` and deploys to GitHub Pages — a push to `main` is a live deploy. `vite.config.ts` sets `base: '/auto-recolor/'` for Pages.
@@ -33,6 +34,7 @@ Dependencies point one way: UI (`App.tsx`, `components/`) → glue (`hooks.ts`, 
   - Tasks have a `PRIORITY`, lower runs first (preview, then selected image's thumbs, other thumbs, export), and an optional `isStale()`; stale queued tasks, and tasks for removed images, reject with `Cancelled`, which callers must ignore (`isCancelled`). Transfer typed arrays / ImageBitmaps with `Comlink.transfer`.
 - **App state** (`App.tsx`, `hooks.ts`) — palettes, settings and preview background persist to localStorage (`auto-recolor.*` keys) via `usePersistentState` with a validating reader (`readPalettes`, `readSettings`); bad data falls back to defaults. `usePreview` / `useThumbs` re-render through the pool and mark old work stale on every change. `model.ts` owns palette types and output naming (`slug`, `folderName`, `outputsFor` with `-2`, `-3` dedupe).
 - **Presets** (`presets.ts`, `PresetLibrary.tsx`) — ready-made community palettes; each must carry `credit` (creator + source URL), which the UI shows.
+- **Guide** (`Guide.tsx`, opened from the `?` under the dials) — explains every Tune control with pictures in `public/guide/`. They are real engine output over a drawn sprite (`scripts/guide-images.ts`); regenerate them when the engine or a default changes, and keep the guide's words in step with the dial labels and hints in `SettingsPanel.tsx`.
 
 ## UI design
 

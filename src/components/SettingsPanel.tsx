@@ -1,9 +1,11 @@
-import { History, Leaf, RotateCcw, Sparkles, Undo2 } from 'lucide-react';
+import { useState } from 'react';
+import { CircleQuestionMark, History, Leaf, RotateCcw, Sparkles, Undo2 } from 'lucide-react';
 import { hueDistance, hueName, oklchToHex } from '../engine/color';
 import { DEFAULT_SETTINGS, type Settings, type Stats } from '../engine/types';
 import type { LoadedImage } from '../images';
 import { DialButton, Pill, Switch } from './Controls';
 import { Gauge, type DialSpec } from './Gauge';
+import { Guide } from './Guide';
 
 export type DialKey = Exclude<keyof Settings, 'mode' | 'scope'>;
 
@@ -55,6 +57,7 @@ interface Props {
 }
 
 export function SettingsPanel({ settings: s, image, stats, focus, inlineGauge, onFocus, onChange, onPickHue }: Props) {
+  const [guide, setGuide] = useState(false);
   const set = <K extends keyof Settings>(key: K, value: Settings[K]) => onChange({ ...s, [key]: value });
   const dials = tuneDials(s, onChange);
   const active = dials.find(d => d.key === focus);
@@ -87,6 +90,13 @@ export function SettingsPanel({ settings: s, image, stats, focus, inlineGauge, o
             disabled={d.disabled} active={d.key === focus} onClick={() => onFocus(d.key)} />
         ))}
       </div>
+
+      <div className="tune-foot">
+        <button type="button" className="rb sm" aria-label="What do these do?" title="What do these do?" onClick={() => setGuide(true)}>
+          <CircleQuestionMark size={20} />
+        </button>
+      </div>
+      {guide && <Guide onClose={() => setGuide(false)} />}
     </div>
   );
 }
