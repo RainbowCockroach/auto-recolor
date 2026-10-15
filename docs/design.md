@@ -127,8 +127,9 @@ No top bar. Three columns, with 24px padding:
 ## Viewer (`ImageViewer.tsx`)
 
 - **Full screen**, with a checker or neutral background.
+- **Bars are subtle:** slim frosted glass (translucent, blurred, hairline edge, small 36px buttons), sized to their content, so the picture shows through. They fade while you drag a zoomed picture.
 - **Top:** a floating rounded bar with the Original/Result pill, a caption (file name or "palette · color") and a round close button.
-- **Bottom:** a floating bar with round 3D zoom-out and zoom-in buttons and a % button between them; tapping the % fits the picture to the screen. Buttons go faint at the zoom limits.
+- **Bottom:** a floating bar with round zoom-out and zoom-in buttons and a % button between them; tapping the % fits the picture to the screen. Buttons go faint at the zoom limits.
 - A small hint above it: "Pinch to zoom" ("Scroll to zoom" with a mouse), or "Drag to look around" once zoomed in.
 - The behavior already exists in `ImageViewer.tsx` and `ZoomStage.tsx`. Only restyle them.
 
