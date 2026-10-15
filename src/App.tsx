@@ -3,15 +3,17 @@ import { Download, FolderDown, Image as ImageIcon, LayoutGrid, Palette as Palett
 import { DEFAULT_SETTINGS, type Settings } from './engine/types';
 import { canSaveToFolder, downloadZip, saveBlob, saveToFolder } from './export';
 import { usePersistentState, usePreview, useThumbs } from './hooks';
+import { useHeld, useShortcuts } from './keys';
 import { loadImage, unloadImage, withHue, type LoadedImage } from './images';
 import { defaultPalettes, outputsFor, readPalettes, readSettings, readSettingsFile, settingsFile, type Palette } from './model';
 import { ColorPicker } from './components/ColorPicker';
 import { Drawer, type DrawerTab } from './components/Drawer';
 import { Gauge } from './components/Gauge';
 import { ImagesPanel } from './components/ImagesPanel';
+import { KeysSheet } from './components/KeysSheet';
 import { OutputPanel } from './components/OutputPanel';
 import { PalettesPanel } from './components/PalettesPanel';
-import { PreviewPanel, type Background } from './components/PreviewPanel';
+import { NEXT_BG, PreviewPanel, type Background } from './components/PreviewPanel';
 import { SettingsPanel, tuneDials, type DialKey } from './components/SettingsPanel';
 import { installSounds, play } from './sound';
 import { PRIORITY, pool } from './worker/pool';
@@ -51,6 +53,8 @@ export function App() {
   // bumped on each finished download, to replay the little star burst
   const [cheer, setCheer] = useState(0);
   const [drawerTab, setDrawerTab] = useState<Tab | null>(null);
+  const [keysOpen, setKeysOpen] = useState(false);
+  const peek = useHeld('c');
   const fileInput = useRef<HTMLInputElement>(null);
   const settingsInput = useRef<HTMLInputElement>(null);
   // folder names in use, shared by drops that load at the same time so two images never get the same folder
@@ -254,13 +258,13 @@ export function App() {
   const exportRow = (
     <div className="export">
       <button type="button" className="rb honey wide-pill" disabled={!!saving || !fileCount}
-        aria-label={saving ? `Saving ${saving.done} of ${saving.total}` : `Download ZIP, ${fileCount} files`} title="Download ZIP"
+        aria-label={saving ? `Saving ${saving.done} of ${saving.total}` : `Download ZIP, ${fileCount} files`} title="Download ZIP" aria-keyshortcuts="Control+S Meta+S"
         onClick={() => void runExport('zip')}>
         <Download size={20} />{saving ? `${saving.done}/${saving.total}` : wide ? `Download ${fileCount}` : fileCount}
         {cheer > 0 && <span key={cheer} className="burst" aria-hidden="true">{Array.from({ length: 10 }, (_, n) => <i key={n} style={{ '--n': n } as CSSProperties} />)}</span>}
       </button>
       {canSaveToFolder() && (
-        <button type="button" className="rb" disabled={!!saving || !fileCount} aria-label="Save to folder" title="Save to folder"
+        <button type="button" className="rb" disabled={!!saving || !fileCount} aria-label="Save to folder" title="Save to folder" aria-keyshortcuts="Control+Shift+S Meta+Shift+S"
           onClick={() => void runExport('folder')}>
           <FolderDown size={22} />
         </button>
@@ -276,12 +280,55 @@ export function App() {
 
   const message = undo ? undo.label : status;
 
+  // ---------- keyboard ----------
+  const stepImage = (d: number) => {
+    if (images.length < 2 || !image) return;
+    const i = images.indexOf(image);
+    setSelectedImageId(images[(i + d + images.length) % images.length]!.id);
+    play('select');
+  };
+  const stepColor = (d: number) => {
+    const colors = palettes.flatMap(p => p.colors);
+    if (colors.length < 2) return;
+    const i = Math.max(0, colors.findIndex(c => c.id === target?.color.id));
+    setSelectedColorId(colors[(i + d + colors.length) % colors.length]!.id);
+    play('select');
+  };
+  const stepPalette = (d: number) => {
+    if (palettes.length < 2) return;
+    const i = Math.max(0, palettes.findIndex(p => p.id === target?.palette.id));
+    setSelectedColorId(palettes[(i + d + palettes.length) % palettes.length]!.colors[0]!.id);
+    play('select');
+  };
+  const restore = () => {
+    if (!undo) return;
+    setPalettes(undo.palettes);
+    if (undo.settings) setSettings(undo.settings);
+    setUndo(null);
+  };
+  useShortcuts({
+    ArrowLeft: () => stepImage(-1),
+    ArrowRight: () => stepImage(1),
+    ArrowUp: () => stepColor(-1),
+    ArrowDown: () => stepColor(1),
+    'shift+ArrowUp': () => stepPalette(-1),
+    'shift+ArrowDown': () => stepPalette(1),
+    m: () => { if (image) { setShowMask(!showMask); play(showMask ? 'off' : 'on'); } },
+    b: () => { if (image) { setBackground(NEXT_BG[background]); play('select'); } },
+    'mod+o': () => fileInput.current?.click(),
+    'mod+s': () => { if (fileCount) void runExport('zip'); },
+    'mod+shift+s': () => { if (fileCount && canSaveToFolder()) void runExport('folder'); },
+    'mod+z': () => { if (!undo) return false; restore(); play('rewind'); },
+    '?': () => setKeysOpen(true),
+    Escape: () => (tuning ? setTuning(null) : false),
+  });
+
   return (
     <div className={`app${wide ? ' wide' : ''}${sheetDial ? ' tuning' : ''}`}>
       {wide && <aside className="rail">{imagesPanel}</aside>}
 
       <main className="center">
-        <PreviewPanel image={image} target={target} preview={preview} showMask={showMask} background={background}
+        <PreviewPanel image={image} target={target} preview={preview} showMask={showMask} peek={peek} background={background}
           onShowMask={setShowMask} onBackground={setBackground} onPick={pick} onAddClick={() => fileInput.current?.click()}
           images={wide ? undefined : images} onSelectImage={setSelectedImageId} />
 
@@ -304,7 +351,7 @@ export function App() {
         <div className="toast">
           <span>{message}</span>
           {undo && (
-            <button type="button" className="rb sm" data-sound="rewind" aria-label="Undo" title="Undo" onClick={() => { setPalettes(undo.palettes); if (undo.settings) setSettings(undo.settings); setUndo(null); }}>
+            <button type="button" className="rb sm" data-sound="rewind" aria-label="Undo" title="Undo" aria-keyshortcuts="Control+Z Meta+Z" onClick={restore}>
               <Undo2 size={19} />
             </button>
           )}
@@ -314,6 +361,7 @@ export function App() {
         onChange={e => { if (e.target.files?.length) void addFiles(e.target.files); e.target.value = ''; }} />
       <input ref={settingsInput} type="file" accept=".json,application/json" hidden
         onChange={e => { const f = e.target.files?.[0]; if (f) void loadSettings(f); e.target.value = ''; }} />
+      {keysOpen && <KeysSheet onClose={() => setKeysOpen(false)} />}
       {dragging && <div className="drop-hint">Drop PNGs to add them</div>}
     </div>
   );

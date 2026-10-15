@@ -2,19 +2,22 @@ import { useState } from 'react';
 import { Contrast, Eye, ImagePlus, Maximize2, Pipette } from 'lucide-react';
 import type { PreviewState } from '../hooks';
 import type { LoadedImage } from '../images';
+import { useShortcuts } from '../keys';
 import type { OutputFile } from '../model';
 import { BitmapCanvas } from './BitmapCanvas';
 import { ImageViewer, type Side } from './ImageViewer';
 
 export type Background = 'checker' | 'light' | 'dark';
 
-const NEXT_BG: Record<Background, Background> = { checker: 'light', light: 'dark', dark: 'checker' };
+export const NEXT_BG: Record<Background, Background> = { checker: 'light', light: 'dark', dark: 'checker' };
 
 interface Props {
   image: LoadedImage | null;
   target: OutputFile | null;
   preview: PreviewState | null;
   showMask: boolean;
+  /** Show the original instead of the result, while a key is held. */
+  peek: boolean;
   background: Background;
   onShowMask: (v: boolean) => void;
   onBackground: (v: Background) => void;
@@ -28,16 +31,21 @@ interface Props {
 /** Sprites smaller than this are drawn with hard pixel edges when scaled up. */
 const PIXEL_ART_SIDE = 200;
 
-export function PreviewPanel({ image, target, preview, showMask, background, onShowMask, onBackground, onPick, onAddClick, images = [], onSelectImage }: Props) {
+export function PreviewPanel({ image, target, preview, showMask, peek, background, onShowMask, onBackground, onPick, onAddClick, images = [], onSelectImage }: Props) {
   const pixelated = !!image && Math.max(image.width, image.height) < PIXEL_ART_SIDE;
-  // Both tied to the image they were started for, so they end when another image is picked.
-  const [viewing, setViewing] = useState<{ id: string; side: Side } | null>(null);
+  // the viewer stays open while flipping through images with the arrow keys; picking ends when another image is picked
+  const [viewSide, setViewSide] = useState<Side | null>(null);
   const [pickingId, setPickingId] = useState<string | null>(null);
-  const viewSide = image && viewing?.id === image.id ? viewing.side : null;
   const picking = !!image && pickingId === image.id;
-  const open = (side: Side) => { if (image) setViewing({ id: image.id, side }); };
+  const open = (side: Side) => { if (image) setViewSide(side); };
   const original = image ? (showMask ? preview?.mask ?? image.full : image.full) : undefined;
-  const shown = showMask ? preview?.mask : preview?.result;
+  const shown = peek ? image?.full : showMask ? preview?.mask : preview?.result;
+
+  useShortcuts({
+    f: () => (viewSide ? setViewSide(null) : open(picking ? 'original' : 'result')),
+    i: () => { if (image && !viewSide) setPickingId(picking ? null : image.id); },
+    Escape: () => (picking ? setPickingId(null) : false),
+  }, !!image);
 
   return (
     <section className="card stage-card" aria-label="Preview">
@@ -62,17 +70,17 @@ export function PreviewPanel({ image, target, preview, showMask, background, onS
         {image && (
           <>
             <button type="button" className="orig-bub" aria-pressed={picking}
-              aria-label="Pick the color to replace" title="Pick the color to replace"
+              aria-label="Pick the color to replace" title="Pick the color to replace (I)" aria-keyshortcuts="I"
               onClick={() => setPickingId(picking ? null : image.id)}>
               <BitmapCanvas bitmap={image.thumb} pixelated={pixelated} />
               <span className="badge"><Pipette size={14} /></span>
             </button>
             <div className="stage-tools">
-              <button type="button" className="rb sm" aria-label={`Background: ${background}`} title={`Background: ${background}`}
+              <button type="button" className="rb sm" aria-label={`Background: ${background}`} title={`Background: ${background} (B)`} aria-keyshortcuts="B"
                 onClick={() => onBackground(NEXT_BG[background])}>
                 <Contrast size={19} />
               </button>
-              <button type="button" className="rb sm" aria-pressed={showMask} aria-label="Show what gets recolored" title="Show what gets recolored"
+              <button type="button" className="rb sm" aria-pressed={showMask} aria-label="Show what gets recolored" title="Show what gets recolored (M)" aria-keyshortcuts="M"
                 onClick={() => onShowMask(!showMask)}>
                 <Eye size={19} />
               </button>
@@ -87,16 +95,16 @@ export function PreviewPanel({ image, target, preview, showMask, background, onS
                 ))}
               </div>
             )}
-            <button type="button" className="rb sm stage-big" aria-label="View big" title="View big" onClick={() => open(picking ? 'original' : 'result')}>
+            <button type="button" className="rb sm stage-big" aria-label="View big" title="View big (F)" aria-keyshortcuts="F" onClick={() => open(picking ? 'original' : 'result')}>
               <Maximize2 size={19} />
             </button>
           </>
         )}
       </div>
       {image && viewSide && (
-        <ImageViewer side={viewSide} original={original} result={preview?.result} pixelated={pixelated}
+        <ImageViewer imageId={image.id} side={peek ? 'original' : viewSide} original={original} result={preview?.result} pixelated={pixelated}
           captions={{ original: image.name, result: target ? `${target.palette.name} · ${target.color.name}` : '' }}
-          onSide={side => setViewing({ id: image.id, side })} onClose={() => setViewing(null)} />
+          onSide={setViewSide} onClose={() => setViewSide(null)} />
       )}
     </section>
   );

@@ -35,12 +35,12 @@ export function ColorPicker({ palettes, selectedColorId, onSelect, actions }: Pr
   return (
     <div className="picker">
       <div className="picker-name">
-        <button type="button" className="rb sm" aria-label="Previous color" title="Previous color" onClick={() => step(-1)}><ChevronLeft size={19} /></button>
+        <button type="button" className="rb sm" aria-label="Previous color" title="Previous color (↑)" aria-keyshortcuts="ArrowUp" onClick={() => step(-1)}><ChevronLeft size={19} /></button>
         <div className="picker-label" aria-live="polite">
           <strong>{color.name}</strong>
           <span className="count">{color.hex} · {i + 1}/{colors.length}</span>
         </div>
-        <button type="button" className="rb sm" aria-label="Next color" title="Next color" onClick={() => step(1)}><ChevronRight size={19} /></button>
+        <button type="button" className="rb sm" aria-label="Next color" title="Next color (↓)" aria-keyshortcuts="ArrowDown" onClick={() => step(1)}><ChevronRight size={19} /></button>
         {actions}
       </div>
 

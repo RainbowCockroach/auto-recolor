@@ -182,6 +182,11 @@ export function Guide({ onClose }: { onClose: () => void }) {
           <h2>Keeping your setup</h2>
           <p>The <FileDown size={16} className="inline-icon" aria-label="Save settings" /> at the bottom of Tune saves your palettes and every dial to a small file. Load it on another device, or share it, with <FileUp size={16} className="inline-icon" aria-label="Load settings" />, or just drop it on the page. Loading replaces your palettes and dials, and the undo button brings them back.</p>
         </section>
+
+        <section className="card">
+          <h2>On a keyboard</h2>
+          <p>Arrows flip through images and colors, and holding C shows the original. Press <kbd>?</kbd> on the main screen for every key.</p>
+        </section>
       </div>
     </dialog>
   );
