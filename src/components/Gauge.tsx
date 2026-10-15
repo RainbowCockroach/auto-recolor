@@ -44,8 +44,8 @@ export function Gauge<K extends string>({ dials, active: d, onFocus, onClose }: 
   const set = (v: number) => {
     const next = Math.max(min, Math.min(max, Math.round(v)));
     if (disabled || next === value) return;
-    // hitting either end clunks like a knob's end stop
-    if (next === min || next === max) { play('chunk'); buzz(18); } else tick((next - min) / (max - min));
+    // hitting either end gives a soft bump, like a knob's end stop
+    if (next === min || next === max) { play('bump'); buzz(); } else tick((next - min) / (max - min));
     d.onChange(next);
   };
   const setRef = useRef(set);

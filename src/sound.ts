@@ -1,7 +1,7 @@
-// Tiny chiptune sound kit, made on the fly with Web Audio (no sound files).
+// Tiny cute sound kit (soft bloops and chirps), made on the fly with Web Audio (no sound files).
 // Buttons get their sound from one listener on the document, picked by class or `data-sound`.
 
-export type SoundName = 'press' | 'chunk' | 'select' | 'pop' | 'on' | 'off' | 'open' | 'close' | 'rewind' | 'poof' | 'coin' | 'powerup' | 'error';
+export type SoundName = 'press' | 'chunk' | 'bump' | 'select' | 'pop' | 'on' | 'off' | 'open' | 'close' | 'rewind' | 'poof' | 'coin' | 'powerup' | 'error';
 
 let ctx: AudioContext | null = null;
 let out: GainNode | null = null;
@@ -11,7 +11,7 @@ function audio() {
     try { ctx = new AudioContext(); } catch { return null; }
     out = ctx.createGain();
     out.gain.value = 0.5;
-    // a soft lowpass takes the harsh edge off the square waves
+    // a soft lowpass rounds off any sharp edge
     const soften = ctx.createBiquadFilter();
     soften.type = 'lowpass';
     soften.frequency.value = 5200;
@@ -23,7 +23,7 @@ function audio() {
 
 interface Tone { type?: OscillatorType; from: number; to?: number; dur: number; vol?: number; at?: number }
 
-function tone({ type = 'square', from, to = from, dur, vol = 0.12, at = 0 }: Tone) {
+function tone({ type = 'sine', from, to = from, dur, vol = 0.1, at = 0 }: Tone) {
   const a = audio();
   if (!a || !out) return;
   const t = a.currentTime + at;
@@ -71,19 +71,22 @@ export const note = (i: number) => SCALE[((i % SCALE.length) + SCALE.length) % S
 const wob = (f: number) => f * (0.97 + Math.random() * 0.06);
 
 const SOUNDS: Record<SoundName, (pitch?: number) => void> = {
-  press: () => { tone({ from: wob(620), to: 920, dur: 0.05, vol: 0.09 }); hiss(0.03, 3000, 1500, 0.05); },
-  chunk: () => { tone({ type: 'triangle', from: wob(330), to: 180, dur: 0.09, vol: 0.22 }); hiss(0.04, 1800, 600, 0.07); },
-  select: () => tone({ from: wob(880), to: 1320, dur: 0.06, vol: 0.08 }),
-  pop: (p = 784) => { tone({ type: 'triangle', from: p * 0.7, to: p * 1.5, dur: 0.07, vol: 0.2 }); tone({ type: 'triangle', from: p * 2, dur: 0.05, vol: 0.06, at: 0.04 }); },
-  on: () => { tone({ from: 659, dur: 0.06, vol: 0.08 }); tone({ from: 988, dur: 0.09, vol: 0.08, at: 0.06 }); },
-  off: () => { tone({ from: 988, dur: 0.06, vol: 0.08 }); tone({ from: 659, dur: 0.09, vol: 0.08, at: 0.06 }); },
-  open: () => tone({ type: 'triangle', from: 260, to: 900, dur: 0.16, vol: 0.18 }),
-  close: () => tone({ type: 'triangle', from: 820, to: 240, dur: 0.14, vol: 0.16 }),
-  rewind: () => [1319, 1047, 784, 523].forEach((f, i) => tone({ from: f, dur: 0.05, vol: 0.07, at: i * 0.04 })),
-  poof: () => { hiss(0.22, 2400, 300, 0.16); tone({ type: 'triangle', from: 500, to: 120, dur: 0.18, vol: 0.12 }); },
-  coin: () => { tone({ from: 988, dur: 0.08, vol: 0.09 }); tone({ from: 1319, dur: 0.38, vol: 0.09, at: 0.08 }); },
-  powerup: () => [523, 659, 784, 1047, 1319].forEach((f, i) => tone({ from: f, dur: 0.07, vol: 0.08, at: i * 0.05 })),
-  error: () => { tone({ type: 'sawtooth', from: 220, to: 140, dur: 0.12, vol: 0.07 }); tone({ type: 'sawtooth', from: 180, to: 110, dur: 0.16, vol: 0.07, at: 0.12 }); },
+  press: () => tone({ from: wob(900), to: 1500, dur: 0.045, vol: 0.12 }),
+  chunk: () => { tone({ from: wob(660), to: 760, dur: 0.05, vol: 0.12 }); tone({ from: 990, to: 1180, dur: 0.08, vol: 0.1, at: 0.05 }); },
+  bump: () => tone({ from: 320, to: 240, dur: 0.05, vol: 0.06 }),
+  select: () => tone({ from: wob(1200), to: 1800, dur: 0.035, vol: 0.08 }),
+  // a water-drop bloop: the pitch shoots up as it fades
+  pop: (p = 784) => { tone({ from: p, to: p * 2, dur: 0.06, vol: 0.13 }); tone({ type: 'triangle', from: p * 3, dur: 0.04, vol: 0.025, at: 0.035 }); },
+  on: () => { tone({ from: 880, dur: 0.05, vol: 0.08 }); tone({ from: 1320, dur: 0.08, vol: 0.08, at: 0.05 }); },
+  off: () => { tone({ from: 1320, dur: 0.05, vol: 0.08 }); tone({ from: 880, dur: 0.08, vol: 0.08, at: 0.05 }); },
+  open: () => tone({ from: 500, to: 1400, dur: 0.12, vol: 0.09 }),
+  close: () => tone({ from: 1300, to: 500, dur: 0.11, vol: 0.08 }),
+  rewind: () => [1568, 1319, 1047, 784].forEach((f, i) => tone({ from: f, dur: 0.045, vol: 0.06, at: i * 0.035 })),
+  poof: () => { tone({ from: 1200, to: 300, dur: 0.14, vol: 0.09 }); hiss(0.12, 3000, 800, 0.04); },
+  coin: () => { tone({ type: 'triangle', from: 988, dur: 0.07, vol: 0.1 }); tone({ type: 'triangle', from: 1319, dur: 0.3, vol: 0.1, at: 0.07 }); },
+  powerup: () => [784, 988, 1175, 1568].forEach((f, i) => tone({ type: 'triangle', from: f, dur: 0.07, vol: 0.08, at: i * 0.05 })),
+  // a gentle "uh-oh", not a harsh buzz
+  error: () => { tone({ type: 'triangle', from: 523, to: 494, dur: 0.1, vol: 0.1 }); tone({ type: 'triangle', from: 392, to: 370, dur: 0.16, vol: 0.1, at: 0.11 }); },
 };
 
 export function play(name: SoundName, pitch?: number) {
@@ -94,11 +97,9 @@ let lastTick = 0;
 /** A knob detent: higher as `frac` (0–1) goes up. Fast turns skip ticks instead of turning into a buzz. */
 export function tick(frac: number) {
   const now = performance.now();
-  if (now - lastTick < 28) return;
+  if (now - lastTick < 45) return;
   lastTick = now;
-  tone({ from: 700 + frac * 900, dur: 0.018, vol: 0.07 });
-  hiss(0.015, 4000, 2500, 0.05);
-  buzz(4);
+  tone({ from: 1400 + frac * 800, dur: 0.012, vol: 0.025 });
 }
 
 /** A tiny vibration on phones that support it (Android; iPhones ignore it). */
