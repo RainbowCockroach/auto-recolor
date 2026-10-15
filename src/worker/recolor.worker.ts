@@ -118,7 +118,8 @@ const api = {
   /** The color under a pixel, for "click to choose the color to replace". */
   probe(id: string, x: number, y: number): ProbeResult {
     const { raster, table } = owned(id);
-    const i = Math.min(raster.height - 1, Math.max(0, y)) * raster.width + Math.min(raster.width - 1, Math.max(0, x));
+    if (x < 0 || y < 0 || x >= raster.width || y >= raster.height) return { ok: false, reason: 'transparent' };
+    const i = y * raster.width + x;
     const k = table.pixelColor[i]!;
     const max = raster.depth === 16 ? 65535 : 255;
     if (k < 0 || raster.data[i * 4 + 3]! / max < 0.5) return { ok: false, reason: 'transparent' };

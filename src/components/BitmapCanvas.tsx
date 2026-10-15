@@ -9,6 +9,16 @@ interface Props {
   onPick?: (x: number, y: number) => void;
 }
 
+type Box = Pick<DOMRect, 'left' | 'top' | 'width' | 'height'>;
+
+/** The image pixel under a screen point. The picture is drawn with object-fit: contain, so it sits centered with empty bands around it. */
+export function pixelAt(box: Box, width: number, height: number, clientX: number, clientY: number): [number, number] {
+  const scale = Math.min(box.width / width, box.height / height);
+  const left = box.left + (box.width - width * scale) / 2;
+  const top = box.top + (box.height - height * scale) / 2;
+  return [Math.floor((clientX - left) / scale), Math.floor((clientY - top) / scale)];
+}
+
 export function BitmapCanvas({ bitmap, pixelated, title, onPick }: Props) {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -25,9 +35,8 @@ export function BitmapCanvas({ bitmap, pixelated, title, onPick }: Props) {
   }, [bitmap]);
 
   const pick = onPick && ((e: MouseEvent<HTMLCanvasElement>) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    onPick(Math.floor(((e.clientX - r.left) / r.width) * e.currentTarget.width),
-           Math.floor(((e.clientY - r.top) / r.height) * e.currentTarget.height));
+    const [x, y] = pixelAt(e.currentTarget.getBoundingClientRect(), e.currentTarget.width, e.currentTarget.height, e.clientX, e.clientY);
+    onPick(x, y);
   });
 
   return (
