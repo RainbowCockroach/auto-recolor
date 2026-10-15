@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, CircleQuestionMark, Paintbrush, RotateCcw, Square, Undo2 } from 'lucide-react';
+import { BookOpen, CircleQuestionMark, FileDown, FileUp, Paintbrush, RotateCcw, Square, Undo2 } from 'lucide-react';
 import { hueDistance, hueName, oklchToHex } from '../engine/color';
 import { DEFAULT_SETTINGS, type Settings, type Stats } from '../engine/types';
 import type { LoadedImage } from '../images';
@@ -54,9 +54,12 @@ interface Props {
   onChange: (next: Settings) => void;
   /** A hue to use instead of the detected one, or null to go back to auto-detect. */
   onPickHue: (hue: number | null) => void;
+  /** Download palettes and settings as a file, or load one back. */
+  onSaveFile: () => void;
+  onLoadFile: () => void;
 }
 
-export function SettingsPanel({ settings: s, image, stats, focus, inlineGauge, onFocus, onChange, onPickHue }: Props) {
+export function SettingsPanel({ settings: s, image, stats, focus, inlineGauge, onFocus, onChange, onPickHue, onSaveFile, onLoadFile }: Props) {
   const [guide, setGuide] = useState(false);
   const set = <K extends keyof Settings>(key: K, value: Settings[K]) => onChange({ ...s, [key]: value });
   const dials = tuneDials(s, onChange);
@@ -94,6 +97,12 @@ export function SettingsPanel({ settings: s, image, stats, focus, inlineGauge, o
       <div className="tune-foot">
         <button type="button" className="rb sm" aria-label="What do these do?" title="What do these do?" onClick={() => setGuide(true)}>
           <CircleQuestionMark size={20} />
+        </button>
+        <button type="button" className="rb sm" aria-label="Save settings to a file" title="Save settings to a file" onClick={onSaveFile}>
+          <FileDown size={20} />
+        </button>
+        <button type="button" className="rb sm" aria-label="Load settings from a file" title="Load settings from a file" onClick={onLoadFile}>
+          <FileUp size={20} />
         </button>
       </div>
       {guide && <Guide onClose={() => setGuide(false)} />}

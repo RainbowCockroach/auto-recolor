@@ -83,3 +83,27 @@ export function readSettings(value: unknown): Settings {
   }
   return out;
 }
+
+// ---------- settings file ----------
+const FILE_KIND = 'auto-recolor-settings';
+
+export interface SettingsFile { palettes?: Palette[]; settings?: Settings }
+
+/** What "Save settings" writes. Ids are left out, so the file stays easy to read and edit. */
+export const settingsFile = (palettes: Palette[], settings: Settings) => ({
+  kind: FILE_KIND,
+  version: 1,
+  palettes: palettes.map(p => ({ name: p.name, ...(p.presetId ? { presetId: p.presetId } : {}), colors: p.colors.map(c => ({ name: c.name, hex: c.hex })) })),
+  settings,
+});
+
+/** The parts of a loaded settings file that make sense, or null when it isn't one. */
+export function readSettingsFile(value: unknown): SettingsFile | null {
+  if (!value || typeof value !== 'object' || (value as { kind?: unknown }).kind !== FILE_KIND) return null;
+  const v = value as Record<string, unknown>;
+  const out: SettingsFile = {};
+  const palettes = readPalettes(v.palettes);
+  if (palettes) out.palettes = palettes;
+  if (v.settings && typeof v.settings === 'object') out.settings = readSettings(v.settings);
+  return out.palettes || out.settings ? out : null;
+}

@@ -263,7 +263,7 @@ button { cursor: pointer; }
 .tune-row .pill button { height: 40px; padding: 0 6px; }
 .dials { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 0; }
 .drawer:not(.wide) .dial { --d: 68px; }
-.tune-foot { display: flex; justify-content: center; padding: 4px 0 2px; }
+.tune-foot { display: flex; justify-content: center; gap: 12px; padding: 4px 0 2px; }
 
 .bubbles { list-style: none; margin: 0; padding: 4px 0; display: flex; flex-wrap: wrap; gap: 16px; }
 .bubbles li { position: relative; }

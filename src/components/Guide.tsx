@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
-import { Eye, Info, RotateCcw, X } from 'lucide-react';
+import { Eye, FileDown, FileUp, Info, RotateCcw, X } from 'lucide-react';
 import { play } from '../sound';
 
 // pictures made by scripts/guide-images.ts
@@ -176,6 +176,11 @@ export function Guide({ onClose }: { onClose: () => void }) {
         <section className="card">
           <h2>Going back</h2>
           <p>The <RotateCcw size={16} className="inline-icon" aria-label="Reset all" /> next to the style puts every dial back to the values marked <span className="def">like this</span>. Tap a dial for the big gauge; double-tap it to reset just that one.</p>
+        </section>
+
+        <section className="card">
+          <h2>Keeping your setup</h2>
+          <p>The <FileDown size={16} className="inline-icon" aria-label="Save settings" /> at the bottom of Tune saves your palettes and every dial to a small file. Load it on another device, or share it, with <FileUp size={16} className="inline-icon" aria-label="Load settings" />, or just drop it on the page. Loading replaces your palettes and dials, and the undo button brings them back.</p>
         </section>
       </div>
     </dialog>

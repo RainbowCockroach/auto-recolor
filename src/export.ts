@@ -46,7 +46,13 @@ export async function downloadZip(images: LoadedImage[], palettes: Palette[], se
   const bytes = await new Promise<Uint8Array>((resolve, reject) =>
     zip(files, { level: 0 }, (err, data) => (err ? reject(err) : resolve(data))));
   const name = `recolored-${new Date().toISOString().slice(0, 10)}.zip`;
-  const url = URL.createObjectURL(new Blob([bytes as Uint8Array<ArrayBuffer>], { type: 'application/zip' }));
+  saveBlob(new Blob([bytes as Uint8Array<ArrayBuffer>], { type: 'application/zip' }), name);
+  return { count, name };
+}
+
+/** Hands a file to the browser's normal download. */
+export function saveBlob(blob: Blob, name: string) {
+  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
   a.download = name;
@@ -54,7 +60,6 @@ export async function downloadZip(images: LoadedImage[], palettes: Palette[], se
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 60_000);
-  return { count, name };
 }
 
 export const canSaveToFolder = () => typeof window.showDirectoryPicker === 'function';

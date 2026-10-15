@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Download, FolderDown, Image as ImageIcon, LayoutGrid, Palette as PaletteIcon, SlidersHorizontal, Undo2 } from 'lucide-react';
-import { DEFAULT_SETTINGS } from './engine/types';
-import { canSaveToFolder, downloadZip, saveToFolder } from './export';
+import { DEFAULT_SETTINGS, type Settings } from './engine/types';
+import { canSaveToFolder, downloadZip, saveBlob, saveToFolder } from './export';
 import { usePersistentState, usePreview, useThumbs } from './hooks';
 import { loadImage, unloadImage, withHue, type LoadedImage } from './images';
-import { defaultPalettes, outputsFor, readPalettes, readSettings, type Palette } from './model';
+import { defaultPalettes, outputsFor, readPalettes, readSettings, readSettingsFile, settingsFile, type Palette } from './model';
 import { ColorPicker } from './components/ColorPicker';
 import { Drawer, type DrawerTab } from './components/Drawer';
 import { Gauge } from './components/Gauge';
@@ -44,7 +44,7 @@ export function App() {
   const [selectedColorId, setSelectedColorId] = usePersistentState<string | null>('auto-recolor.selectedColor', readColorId, () => null);
   const [showMask, setShowMask] = useState(false);
   const [status, setStatus] = useState('');
-  const [undo, setUndo] = useState<{ label: string; palettes: Palette[] } | null>(null);
+  const [undo, setUndo] = useState<{ label: string; palettes: Palette[]; settings?: Settings } | null>(null);
   const [saving, setSaving] = useState<{ done: number; total: number } | null>(null);
   const [dragging, setDragging] = useState(false);
   const [tuning, setTuning] = useState<DialKey | null>(null);
@@ -52,6 +52,7 @@ export function App() {
   const [cheer, setCheer] = useState(0);
   const [drawerTab, setDrawerTab] = useState<Tab | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  const settingsInput = useRef<HTMLInputElement>(null);
   // folder names in use, shared by drops that load at the same time so two images never get the same folder
   const folders = useRef(new Set<string>());
   const wide = useWide();
@@ -149,10 +150,33 @@ export function App() {
 
   // ---------- palettes ----------
   const changePalettes = (next: Palette[], removed?: string) => {
-    if (removed) setUndo({ label: removed, palettes });
+    if (removed) setUndo({ label: `Removed ${removed}`, palettes });
     else setUndo(null);
     setPalettes(next);
   };
+
+  // ---------- settings file ----------
+  const saveSettings = () => {
+    saveBlob(new Blob([JSON.stringify(settingsFile(palettes, settings), null, 2)], { type: 'application/json' }), 'auto-recolor-settings.json');
+    play('coin');
+  };
+
+  const loadSettings = async (file: File) => {
+    let loaded = null;
+    try { loaded = readSettingsFile(JSON.parse(await file.text())); } catch { /* not JSON */ }
+    if (!loaded) {
+      play('error');
+      setStatus(`${file.name} isn't a settings file.`);
+      return;
+    }
+    setUndo({ label: `Loaded ${file.name}`, palettes, settings });
+    if (loaded.palettes) setPalettes(loaded.palettes);
+    if (loaded.settings) setSettings(loaded.settings);
+    play('powerup');
+  };
+  // the drop listener below is set up once, so it reaches the latest loadSettings through this
+  const loadSettingsRef = useRef(loadSettings);
+  useEffect(() => { loadSettingsRef.current = loadSettings; });
 
   // ---------- drag and drop anywhere ----------
   useEffect(() => {
@@ -166,7 +190,10 @@ export function App() {
       e.preventDefault();
       depth = 0;
       setDragging(false);
-      void addFiles(e.dataTransfer!.files);
+      const files = [...e.dataTransfer!.files];
+      const isJson = (f: File) => f.type === 'application/json' || f.name.toLowerCase().endsWith('.json');
+      files.filter(isJson).forEach(f => void loadSettingsRef.current(f));
+      void addFiles(files.filter(f => !isJson(f)));
     };
     window.addEventListener('dragenter', enter);
     window.addEventListener('dragleave', leave);
@@ -214,7 +241,8 @@ export function App() {
     ) },
     { id: 'tune', label: 'Tune', icon: <SlidersHorizontal size={19} />, content: (
       <SettingsPanel settings={settings} image={image} stats={preview?.stats} focus={tuning} inlineGauge={wide} onFocus={setTuning} onChange={setSettings}
-        onPickHue={hue => { if (image) setPickedHue(image.id, hue); }} />
+        onPickHue={hue => { if (image) setPickedHue(image.id, hue); }}
+        onSaveFile={saveSettings} onLoadFile={() => settingsInput.current?.click()} />
     ) },
     { id: 'results', label: 'Results', icon: <LayoutGrid size={19} />, content: (
       <OutputPanel images={images} palettes={palettes} thumbs={thumbs} selectedImageId={image?.id ?? null}
@@ -246,7 +274,7 @@ export function App() {
   // phones show the gauge in its own sheet, with the drawer out of the way and the picture taller
   const sheetDial = wide ? undefined : dials.find(d => d.key === tuning);
 
-  const message = undo ? `Removed ${undo.label}` : status;
+  const message = undo ? undo.label : status;
 
   return (
     <div className={`app${wide ? ' wide' : ''}${sheetDial ? ' tuning' : ''}`}>
@@ -276,7 +304,7 @@ export function App() {
         <div className="toast">
           <span>{message}</span>
           {undo && (
-            <button type="button" className="rb sm" data-sound="rewind" aria-label="Undo" title="Undo" onClick={() => { setPalettes(undo.palettes); setUndo(null); }}>
+            <button type="button" className="rb sm" data-sound="rewind" aria-label="Undo" title="Undo" onClick={() => { setPalettes(undo.palettes); if (undo.settings) setSettings(undo.settings); setUndo(null); }}>
               <Undo2 size={19} />
             </button>
           )}
@@ -284,6 +312,8 @@ export function App() {
       )}
       <input ref={fileInput} type="file" accept="image/png" multiple hidden
         onChange={e => { if (e.target.files?.length) void addFiles(e.target.files); e.target.value = ''; }} />
+      <input ref={settingsInput} type="file" accept=".json,application/json" hidden
+        onChange={e => { const f = e.target.files?.[0]; if (f) void loadSettings(f); e.target.value = ''; }} />
       {dragging && <div className="drop-hint">Drop PNGs to add them</div>}
     </div>
   );
