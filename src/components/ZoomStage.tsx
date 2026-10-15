@@ -43,9 +43,13 @@ export function ZoomStage({ view, onView, children, overlay }: Props) {
     return { x: clientX - r.left - r.width / 2, y: clientY - r.top - r.height / 2 };
   };
 
+  // Pan only as far as the picture's own edges, not the stage's, so a narrow picture can't drift off into empty space.
   const clamp = (v: View): View => {
     const r = ref.current!.getBoundingClientRect();
-    const mx = (r.width * v.scale) / 2, my = (r.height * v.scale) / 2;
+    const c = ref.current!.querySelector('canvas');
+    const fit = c?.width && c.height ? Math.min(r.width / c.width, r.height / c.height) : 0;
+    const w = fit ? c!.width * fit : r.width, h = fit ? c!.height * fit : r.height;
+    const mx = Math.max(0, (w * v.scale - r.width) / 2), my = Math.max(0, (h * v.scale - r.height) / 2);
     return { scale: v.scale, x: Math.min(mx, Math.max(-mx, v.x)), y: Math.min(my, Math.max(-my, v.y)) };
   };
 
