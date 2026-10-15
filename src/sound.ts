@@ -1,4 +1,4 @@
-// Tiny cozy sound kit (wood blocks and marimba notes), made on the fly with Web Audio (no sound files).
+// Tiny cozy sound kit (a wooden box, low marimba notes), made on the fly with Web Audio (no sound files).
 // Buttons get their sound from one listener on the document, picked by class or `data-sound`.
 
 export type SoundName = 'press' | 'chunk' | 'bump' | 'select' | 'pop' | 'on' | 'off' | 'open' | 'close' | 'rewind' | 'poof' | 'coin' | 'powerup' | 'error';
@@ -14,7 +14,7 @@ function audio() {
     // a soft lowpass rounds off any sharp edge
     const soften = ctx.createBiquadFilter();
     soften.type = 'lowpass';
-    soften.frequency.value = 4200;
+    soften.frequency.value = 3200;
     out.connect(soften).connect(ctx.destination);
   }
   if (ctx.state === 'suspended') void ctx.resume();
@@ -66,17 +66,17 @@ function hiss(dur: number, from: number, to: number, vol = 0.1) {
 
 interface Wood { at?: number; dur?: number; vol?: number }
 
-/** A struck wooden bar: a quick-fading note, a faint bright overtone and a tiny knock at the start. */
+/** A struck wooden bar: a quick-fading note, a faint overtone and a soft knock at the start, like tapping a wooden box. */
 function wood(f: number, { at = 0, dur = 0.12, vol = 0.12 }: Wood = {}) {
   // the pitch sags a hair as it rings, which sounds like wood rather than a beep
   tone({ from: f, to: f * 0.98, dur, vol, at });
   // a marimba bar's first overtone sits about 4× up and dies much sooner
-  tone({ from: f * 3.93, dur: dur / 4, vol: vol * 0.22, at });
-  if (!at) hiss(0.008, Math.min(f * 2, 6000), f, vol * 0.5);
+  tone({ from: f * 3.93, dur: dur / 4, vol: vol * 0.15, at });
+  if (!at) hiss(0.012, Math.min(f * 1.6, 3000), f * 0.8, vol * 0.6);
 }
 
-// C major pentatonic from C5, so runs of drops and ticks always sound in tune
-const SCALE = [523, 587, 659, 784, 880, 1047, 1175, 1319, 1568, 1760];
+// G major pentatonic from G4, so runs of drops always sound in tune
+const SCALE = [392, 440, 494, 587, 659, 784, 880, 988, 1175, 1319];
 export const note = (i: number) => SCALE[((i % SCALE.length) + SCALE.length) % SCALE.length]!;
 // a little pitch wobble keeps repeated taps from sounding robotic
 const wob = (f: number) => f * (0.97 + Math.random() * 0.06);
@@ -84,21 +84,21 @@ const wob = (f: number) => f * (0.97 + Math.random() * 0.06);
 const run = (notes: number[], gap = 0.04, vol = 0.07) => notes.forEach((f, i) => wood(f, { at: i * gap, vol, dur: 0.1 }));
 
 const SOUNDS: Record<SoundName, (pitch?: number) => void> = {
-  press: () => wood(wob(880), { dur: 0.06, vol: 0.11 }),
-  chunk: () => { wood(659, { vol: 0.12 }); wood(988, { at: 0.06, vol: 0.11, dur: 0.16 }); },
-  bump: () => tone({ from: 180, to: 150, dur: 0.05, vol: 0.045 }),
-  select: () => wood(wob(1320), { dur: 0.05, vol: 0.07 }),
-  pop: (p = 784) => wood(p, { dur: 0.16, vol: 0.12 }),
-  on: () => { wood(880, { dur: 0.06, vol: 0.08 }); wood(1320, { at: 0.05, vol: 0.08 }); },
-  off: () => { wood(1320, { dur: 0.06, vol: 0.08 }); wood(880, { at: 0.05, vol: 0.08 }); },
-  open: () => run([784, 988, 1175]),
-  close: () => run([1175, 988, 784]),
-  rewind: () => run([1568, 1319, 1047, 784], 0.035, 0.06),
-  poof: () => { wood(294, { dur: 0.14, vol: 0.1 }); hiss(0.1, 2500, 700, 0.03); },
-  coin: () => { wood(988, { dur: 0.08, vol: 0.11 }); wood(1319, { at: 0.07, dur: 0.35, vol: 0.11 }); },
-  powerup: () => run([784, 988, 1175, 1568], 0.05, 0.08),
+  press: () => wood(wob(587), { dur: 0.07, vol: 0.12 }),
+  chunk: () => { wood(440, { vol: 0.13 }); wood(659, { at: 0.06, vol: 0.12, dur: 0.18 }); },
+  bump: () => wood(370, { dur: 0.05, vol: 0.07 }),
+  select: () => wood(wob(880), { dur: 0.05, vol: 0.08 }),
+  pop: (p = 523) => wood(p, { dur: 0.18, vol: 0.13 }),
+  on: () => { wood(587, { dur: 0.06, vol: 0.09 }); wood(880, { at: 0.05, vol: 0.09 }); },
+  off: () => { wood(880, { dur: 0.06, vol: 0.09 }); wood(587, { at: 0.05, vol: 0.09 }); },
+  open: () => run([523, 659, 784]),
+  close: () => run([784, 659, 523]),
+  rewind: () => run([1047, 880, 659, 523], 0.035, 0.07),
+  poof: () => { wood(220, { dur: 0.14, vol: 0.12 }); hiss(0.1, 1600, 500, 0.03); },
+  coin: () => { wood(659, { dur: 0.08, vol: 0.12 }); wood(880, { at: 0.07, dur: 0.38, vol: 0.12 }); },
+  powerup: () => run([523, 659, 784, 1047], 0.05, 0.09),
   // a gentle hollow "tok-tok" going down, not a harsh buzz
-  error: () => { wood(392, { dur: 0.1, vol: 0.1 }); wood(330, { at: 0.11, dur: 0.16, vol: 0.1 }); },
+  error: () => { wood(330, { dur: 0.1, vol: 0.11 }); wood(277, { at: 0.11, dur: 0.16, vol: 0.11 }); },
 };
 
 export function play(name: SoundName, pitch?: number) {
@@ -111,8 +111,9 @@ export function tick(frac: number) {
   const now = performance.now();
   if (now - lastTick < 45) return;
   lastTick = now;
-  // a small low tap, barely there: no overtone or knock, just a soft thump
-  tone({ from: 300 + frac * 120, to: 260 + frac * 100, dur: 0.025, vol: 0.03 });
+  // a small soft tap: low enough to feel cozy, high enough for phone speakers (they drop most sound below ~400 Hz)
+  tone({ from: 600 + frac * 160, to: 560 + frac * 150, dur: 0.022, vol: 0.035 });
+  hiss(0.006, 1800, 900, 0.02);
 }
 
 /** A tiny vibration on phones that support it (Android; iPhones ignore it). */
