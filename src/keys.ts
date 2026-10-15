@@ -6,9 +6,9 @@ const MOD = isMac ? '⌘' : 'Ctrl';
 /** Every shortcut, for the Keys sheet. `keys` are what to show; several mean "any of these". */
 export const SHORTCUTS: { group: string; items: { keys: string[]; label: string }[] }[] = [
   { group: 'Browse', items: [
-    { keys: ['←', '→'], label: 'Previous / next image' },
-    { keys: ['↑', '↓'], label: 'Previous / next color' },
-    { keys: ['⇧ ↑', '⇧ ↓'], label: 'Previous / next palette' },
+    { keys: ['←', '→'], label: 'Previous / next color' },
+    { keys: ['⇧ ←', '⇧ →'], label: 'Previous / next palette' },
+    { keys: ['↑', '↓'], label: 'Previous / next image' },
   ] },
   { group: 'Look', items: [
     { keys: ['C'], label: 'Hold to see the original' },

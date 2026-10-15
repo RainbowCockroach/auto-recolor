@@ -307,12 +307,12 @@ export function App() {
     setUndo(null);
   };
   useShortcuts({
-    ArrowLeft: () => stepImage(-1),
-    ArrowRight: () => stepImage(1),
-    ArrowUp: () => stepColor(-1),
-    ArrowDown: () => stepColor(1),
-    'shift+ArrowUp': () => stepPalette(-1),
-    'shift+ArrowDown': () => stepPalette(1),
+    ArrowUp: () => stepImage(-1),
+    ArrowDown: () => stepImage(1),
+    ArrowLeft: () => stepColor(-1),
+    ArrowRight: () => stepColor(1),
+    'shift+ArrowLeft': () => stepPalette(-1),
+    'shift+ArrowRight': () => stepPalette(1),
     m: () => { if (image) { setShowMask(!showMask); play(showMask ? 'off' : 'on'); } },
     b: () => { if (image) { setBackground(NEXT_BG[background]); play('select'); } },
     'mod+o': () => fileInput.current?.click(),
