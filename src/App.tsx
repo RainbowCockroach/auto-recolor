@@ -45,6 +45,7 @@ export function App() {
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [selectedColorId, setSelectedColorId] = usePersistentState<string | null>('auto-recolor.selectedColor', readColorId, () => null);
   const [showMask, setShowMask] = useState(false);
+  const [showOriginal, setShowOriginal] = useState(false);
   const [status, setStatus] = useState('');
   const [undo, setUndo] = useState<{ label: string; palettes: Palette[]; settings?: Settings } | null>(null);
   const [saving, setSaving] = useState<{ done: number; total: number } | null>(null);
@@ -55,6 +56,9 @@ export function App() {
   const [drawerTab, setDrawerTab] = useState<Tab | null>(null);
   const [keysOpen, setKeysOpen] = useState(false);
   const peek = useHeld('c');
+  // the big picture shows one thing at a time: the result, the mask or the original
+  const toggleMask = (on: boolean) => { setShowMask(on); if (on) setShowOriginal(false); };
+  const toggleOriginal = (on: boolean) => { setShowOriginal(on); if (on) setShowMask(false); };
   const fileInput = useRef<HTMLInputElement>(null);
   const settingsInput = useRef<HTMLInputElement>(null);
   // folder names in use, shared by drops that load at the same time so two images never get the same folder
@@ -72,7 +76,7 @@ export function App() {
     return outs.find(o => o.color.id === selectedColorId) ?? outs[0] ?? null;
   }, [image, palettes, selectedColorId]);
 
-  const preview = usePreview(image, target?.color ?? null, settings, showMask);
+  const preview = usePreview(image, target?.color ?? null, settings);
   const thumbs = useThumbs(images, palettes, settings, image?.id ?? null, drawerTab === 'results');
 
   useEffect(() => installSounds(), []);
@@ -313,7 +317,7 @@ export function App() {
     ArrowRight: () => stepColor(1),
     'shift+ArrowLeft': () => stepPalette(-1),
     'shift+ArrowRight': () => stepPalette(1),
-    m: () => { if (image) { setShowMask(!showMask); play(showMask ? 'off' : 'on'); } },
+    m: () => { if (image) { toggleMask(!showMask); play(showMask ? 'off' : 'on'); } },
     b: () => { if (image) { setBackground(NEXT_BG[background]); play('select'); } },
     'mod+o': () => fileInput.current?.click(),
     'mod+s': () => { if (fileCount) void runExport('zip'); },
@@ -328,8 +332,8 @@ export function App() {
       {wide && <aside className="rail">{imagesPanel}</aside>}
 
       <main className="center">
-        <PreviewPanel image={image} target={target} preview={preview} showMask={showMask} peek={peek} background={background}
-          onShowMask={setShowMask} onBackground={setBackground} onPick={pick} onAddClick={() => fileInput.current?.click()}
+        <PreviewPanel image={image} target={target} preview={preview} showMask={showMask} showOriginal={showOriginal} peek={peek} background={background}
+          onShowMask={toggleMask} onShowOriginal={toggleOriginal} onBackground={setBackground} onPick={pick} onAddClick={() => fileInput.current?.click()}
           images={wide ? undefined : images} onSelectImage={setSelectedImageId} />
 
         <ColorPicker palettes={palettes} selectedColorId={target?.color.id ?? null} onSelect={setSelectedColorId}

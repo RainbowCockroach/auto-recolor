@@ -28,8 +28,8 @@ export interface PreviewState {
   stats?: Stats;
 }
 
-/** Full-size recolor of the selected image and color, plus its mask view when asked for. */
-export function usePreview(image: LoadedImage | null, color: PaletteColor | null, settings: Settings, showMask: boolean) {
+/** Full-size recolor of the selected image and color, plus its mask view (what gets recolored). */
+export function usePreview(image: LoadedImage | null, color: PaletteColor | null, settings: Settings) {
   const [state, setState] = useState<PreviewState | null>(null);
   const id = image?.id, hue = image?.hue, hex = color?.hex;
 
@@ -43,9 +43,17 @@ export function usePreview(image: LoadedImage | null, color: PaletteColor | null
     pool.run(id, api => api.stats(id, hue, settings), opts).then(stats => update({ stats }), reportUnexpected);
     renderVariant({ id, hue, settings, hex, want: { full: true } }, opts)
       .then(r => update({ result: r.full }), reportUnexpected);
-    if (showMask) pool.run(id, api => api.maskView(id, hue, settings), opts).then(mask => update({ mask }), reportUnexpected);
     return () => { stale = true; };
-  }, [id, hue, hex, settings, showMask]);
+  }, [id, hue, hex, settings]);
+
+  // the mask doesn't depend on the target color, so flipping through colors doesn't redo it
+  useEffect(() => {
+    if (!id || hue === undefined) return;
+    let stale = false;
+    pool.run(id, api => api.maskView(id, hue, settings), { priority: PRIORITY.preview, isStale: () => stale })
+      .then(mask => { if (!stale) setState(prev => ({ ...(prev?.imageId === id ? prev : {}), imageId: id, mask })); }, reportUnexpected);
+    return () => { stale = true; };
+  }, [id, hue, settings]);
 
   // replaced bitmaps are freed now instead of whenever garbage collection gets to them
   const last = useRef<PreviewState | null>(null);

@@ -84,8 +84,8 @@ From top to bottom; nothing is fixed to the top. Keep it compact: 8–10px page 
 
 1. **Picture card** (takes all spare height). Inside the canvas well:
    - the recolored result, large
-   - top-left: a 50px round **original bubble** with a small pipette badge. Tapping it starts pick mode: the bubble gets a sage ring, the big picture shows the original with a "Tap the color to replace" chip, and the next tap on the picture picks the color and ends pick mode
-   - top-right: 36px round **Background** and **Mask** buttons
+   - top-left: a 50px round **pick bubble** with a small pipette badge. It shows the mask view of the image (the part that gets recolored in color, the rest faded grey), so it's clear what the current pick covers. Tapping it starts pick mode: the bubble gets a sage ring, the big picture shows the original with a "Tap the color to replace" chip, and the next tap on the picture picks the color and ends pick mode
+   - top-right, in this order: 36px round **Background**, **Original** (toggles the big picture to the original; holding C does the same) and **Mask** buttons. Original and Mask are toggles that switch each other off
    - bottom-left, only with 2+ images: a row of small round **image bubbles** (38px); tapping one switches the preview to that image. The drawer's Images tab still adds and removes images
    - bottom-right: round **View big** button (opens the viewer)
 2. **Color name + download row** (one row): round ◀ and ▶ around the color name (Fredoka 16px) with "hex · 14/76", then a compact honey download pill showing only the icon and the file count, plus the round **Save to folder** button when `canSaveToFolder()`.
@@ -119,7 +119,7 @@ No top bar. Three columns, with 24px padding:
 
 1. **Left rail** (84px): round image bubbles (selected one has the thin brown selection ring) and a dashed + bubble.
 2. **Center:**
-   - a big picture card. The original sits in a 112px bubble at top-left; Background, Mask and View big buttons sit at top-right; a color name chip at bottom-left.
+   - a big picture card. The pick bubble (112px, showing the mask view) sits at top-left; Background, Original and Mask buttons sit at top-right, View big at bottom-right; a color name chip at bottom-left.
    - under it, one row: on the left ◀ color name ▶ (with "hex · 14/76"); on the right a quiet "3 images × 103 colors" note, the Download pill and the folder button
    - then the palette pills and a wider color tray (40px drops, `auto-fill`, about 2 rows visible), all lined up on the left
 3. **Right panel** (340px card): tabs as round buttons with captions (Colors / Tune / Results), showing the same content as the phone drawer. Tune shows the same dial grid as the phone. The card hugs its content (up to full height, then it scrolls) instead of standing as a tall, mostly empty card.
