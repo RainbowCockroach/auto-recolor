@@ -86,7 +86,7 @@ const run = (notes: number[], gap = 0.04, vol = 0.07) => notes.forEach((f, i) =>
 const SOUNDS: Record<SoundName, (pitch?: number) => void> = {
   press: () => wood(wob(880), { dur: 0.06, vol: 0.11 }),
   chunk: () => { wood(659, { vol: 0.12 }); wood(988, { at: 0.06, vol: 0.11, dur: 0.16 }); },
-  bump: () => wood(220, { dur: 0.08, vol: 0.06 }),
+  bump: () => tone({ from: 180, to: 150, dur: 0.05, vol: 0.045 }),
   select: () => wood(wob(1320), { dur: 0.05, vol: 0.07 }),
   pop: (p = 784) => wood(p, { dur: 0.16, vol: 0.12 }),
   on: () => { wood(880, { dur: 0.06, vol: 0.08 }); wood(1320, { at: 0.05, vol: 0.08 }); },
@@ -111,7 +111,8 @@ export function tick(frac: number) {
   const now = performance.now();
   if (now - lastTick < 45) return;
   lastTick = now;
-  wood(1600 + frac * 600, { dur: 0.02, vol: 0.022 });
+  // a small low tap, barely there: no overtone or knock, just a soft thump
+  tone({ from: 300 + frac * 120, to: 260 + frac * 100, dur: 0.025, vol: 0.03 });
 }
 
 /** A tiny vibration on phones that support it (Android; iPhones ignore it). */

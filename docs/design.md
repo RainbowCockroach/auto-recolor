@@ -137,7 +137,7 @@ No top bar. Three columns, with 24px padding:
 It should feel like a cozy old game: every touch answers right away.
 
 - **Sound** (`src/sound.ts`): cute but cozy wood-block and marimba notes made with Web Audio, no sound files. One listener on the document picks a sound by class, or by `data-sound` (`close`, `rewind`, `poof`, `none`, …) when a button needs a different one. Round buttons sound on press, picks (drops, bubbles, thumbs) on click, so scrolling a row stays quiet. Rows with `data-tick="<px>"` tick once per item scrolled by. Picks are tuned to a pentatonic scale, so runs of them sound like music.
-- The gauge ticks very quietly once per step, higher as the value rises, with a soft bump at either end. Fast drags skip ticks rather than buzz.
+- The gauge makes a tiny low tap once per step (a touch higher as the value rises), with a soft low bump at either end. Fast drags skip ticks rather than buzz.
 - Big moments: an arpeggio when an image is added, a coin when a download finishes (plus a star burst from the Download button) or a color is picked, a gentle "uh-oh" on errors.
 - Phones that can vibrate (Android) get a tiny buzz with each press. iPhones ignore it.
 - There is no mute button on purpose: people turn the page or device volume down instead.
