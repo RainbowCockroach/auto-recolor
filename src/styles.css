@@ -284,7 +284,12 @@ button { cursor: pointer; }
 .pname { flex: 1; min-width: 0; padding: 4px 0; border: 0; background: none; font: 600 1.1rem var(--font-display); color: var(--ink); }
 .palette-head .count { margin-right: 4px; }
 .palette.folded .palette-head { padding-right: 8px; color: var(--soft); }
-.edit-box { display: flex; align-items: center; gap: 8px; }
+/* the name gets a whole row, so normal names fit; the short hex code sits under it */
+.edit-box { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "drop name name" "drop hex del"; align-items: center; gap: 6px 10px; }
+.edit-box .drop.big { grid-area: drop; width: 56px; height: 56px; align-self: center; }
+.edit-box .field:not(.hex) { grid-area: name; width: 100%; }
+.edit-box .field.hex { grid-area: hex; height: 36px; }
+.edit-box > .rb { grid-area: del; width: 36px; height: 36px; }
 .field { min-width: 0; height: 44px; flex: 1; padding: 0 16px; border: 0; border-radius: 999px; background: var(--card); box-shadow: inset 0 2px 4px rgba(60,50,40,.14); font-weight: 700; }
 .field.hex { flex: none; width: 96px; padding: 0 12px; font: 500 0.92rem var(--font-display); }
 .field.invalid { color: #a3261d; box-shadow: inset 0 0 0 2px #c44; }
@@ -410,7 +415,7 @@ kbd { display: inline-block; min-width: 28px; padding: 1px 7px; border-radius: 8
 .wide .stage .rb.sm { width: 40px; height: 40px; }
 .wide .picker-label strong { font-size: 1.15rem; }
 .wide .picker-name { gap: 10px; padding-top: 16px; }
-.wide .picker-label { flex: none; width: 150px; }
+.wide .picker-label { flex: 0 1 auto; min-width: 120px; max-width: 300px; }
 .wide .picker-name .export { margin-left: auto; gap: 12px; }
 .wide .picker-name .export .count { order: -1; }
 .wide .pal { height: 40px; }

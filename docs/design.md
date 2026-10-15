@@ -108,7 +108,7 @@ From top to bottom; nothing is fixed to the top. Keep it compact: 8–10px page 
 - **Header:** "Palettes · 3 · 103 colors", plus round **Library** and **New palette** buttons.
 - **One palette open at a time.** It shows:
   - its name field, a delete button and a fold button
-  - an **edit box** for the selected color: a round color-picker drop, a name field, a hex field and a remove button. It sits above the grid, so it stays reachable in long palettes.
+  - an **edit box** for the selected color: a big round color-picker drop on the left; next to it the name field gets a full row, and the shorter hex field and the remove button sit under it. One row for all four left the name about 80px wide in the 340px side panel, too small for normal names. It sits above the grid, so it stays reachable in long palettes.
   - an 8-column grid of drops ending with a dashed **+** drop
 - **The other palettes are folded:** name, count and a paint strip.
 - The undo toast after a removal is a dark ink pill above the drawer, with a round Undo button.
