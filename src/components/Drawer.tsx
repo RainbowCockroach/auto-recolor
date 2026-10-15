@@ -95,6 +95,7 @@ export function Drawer<T extends string>({ tabs, wide, initial, away, onShow }: 
         onClickCapture={e => { if (dragged.current) { e.stopPropagation(); dragged.current = false; } }}>
         {!wide && (
           <button type="button" className="handle" aria-expanded={open} aria-label={open ? 'Close settings' : 'Open settings'}
+            title={open ? 'Close settings' : 'Open settings'}
             onClick={() => setOpen(!open)}>
             <span />
           </button>

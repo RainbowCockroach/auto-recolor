@@ -28,7 +28,7 @@ function HexField({ hex, onCommit }: { hex: string; onCommit: (hex: string) => v
     setDraft(null);
   };
   return (
-    <input className={`field hex${invalid ? ' invalid' : ''}`} aria-label="Hex code" spellCheck={false}
+    <input className={`field hex${invalid ? ' invalid' : ''}`} aria-label="Hex code" title="Hex code" spellCheck={false}
       value={draft ?? hex} aria-invalid={invalid}
       onChange={e => {
         setDraft(e.target.value);
@@ -84,7 +84,7 @@ export function PalettesPanel({ palettes, selectedColorId, onSelectColor, onChan
       {palettes.map(p => p.id === openId ? (
         <div className="palette open" key={p.id}>
           <div className="palette-head">
-            <input className="pname" aria-label="Palette name" value={p.name}
+            <input className="pname" aria-label="Palette name" title="Palette name" value={p.name}
               onChange={e => updatePalette(p.id, x => ({ ...x, name: e.target.value }))} />
             <span className="count">{p.colors.length}</span>
             <button type="button" className="rb sm flat" data-sound="poof" aria-label={`Remove palette ${p.name}`} title="Remove palette"
@@ -101,7 +101,7 @@ export function PalettesPanel({ palettes, selectedColorId, onSelectColor, onChan
                 <input type="color" aria-label={`${c.name} color`} value={c.hex}
                   onChange={e => updateColor(p.id, c.id, { hex: e.target.value })} />
               </label>
-              <input className="field" aria-label="Color name" value={c.name}
+              <input className="field" aria-label="Color name" title="Color name" value={c.name}
                 onChange={e => updateColor(p.id, c.id, { name: e.target.value })} />
               <HexField key={c.id} hex={c.hex} onCommit={hex => updateColor(p.id, c.id, { hex })} />
               <button type="button" className="rb sm flat" data-sound="poof" aria-label={`Remove ${c.name}`} title="Remove color" onClick={() => removeColor(p, c)}>

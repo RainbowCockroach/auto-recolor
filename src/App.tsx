@@ -332,6 +332,7 @@ export function App() {
       {wide && <aside className="rail">{imagesPanel}</aside>}
 
       <main className="center">
+        <h1 className="sr-only">Auto Recolor</h1>
         <PreviewPanel image={image} target={target} preview={preview} showMask={showMask} showOriginal={showOriginal} peek={peek} background={background}
           onShowMask={toggleMask} onShowOriginal={toggleOriginal} onBackground={setBackground} onPick={pick} onAddClick={() => fileInput.current?.click()}
           images={wide ? undefined : images} onSelectImage={setSelectedImageId} />
