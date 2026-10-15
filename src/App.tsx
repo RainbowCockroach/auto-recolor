@@ -13,11 +13,10 @@ import { OutputPanel } from './components/OutputPanel';
 import { PalettesPanel } from './components/PalettesPanel';
 import { PreviewPanel, type Background } from './components/PreviewPanel';
 import { SettingsPanel, tuneDials, type DialKey } from './components/SettingsPanel';
-import { installSounds, play, setSoundOn } from './sound';
+import { installSounds, play } from './sound';
 import { PRIORITY, pool } from './worker/pool';
 
 const readBackground = (v: unknown): Background | null => (v === 'checker' || v === 'light' || v === 'dark' ? v : null);
-const readFlag = (v: unknown): boolean | null => (typeof v === 'boolean' ? v : null);
 const readColorId = (v: unknown): string | null => (typeof v === 'string' ? v : null);
 
 const WIDE = '(min-width: 900px)';
@@ -49,7 +48,6 @@ export function App() {
   const [saving, setSaving] = useState<{ done: number; total: number } | null>(null);
   const [dragging, setDragging] = useState(false);
   const [tuning, setTuning] = useState<DialKey | null>(null);
-  const [soundOn, setSound] = usePersistentState('auto-recolor.sound', readFlag, () => true);
   // bumped on each finished download, to replay the little star burst
   const [cheer, setCheer] = useState(0);
   const [drawerTab, setDrawerTab] = useState<Tab | null>(null);
@@ -73,7 +71,6 @@ export function App() {
   const thumbs = useThumbs(images, palettes, settings, image?.id ?? null, drawerTab === 'results');
 
   useEffect(() => installSounds(), []);
-  useEffect(() => setSoundOn(soundOn), [soundOn]);
 
   useEffect(() => {
     if (!cheer) return;
@@ -258,8 +255,7 @@ export function App() {
       <main className="center">
         <PreviewPanel image={image} target={target} preview={preview} showMask={showMask} background={background}
           onShowMask={setShowMask} onBackground={setBackground} onPick={pick} onAddClick={() => fileInput.current?.click()}
-          images={wide ? undefined : images} onSelectImage={setSelectedImageId} soundOn={soundOn}
-          onSound={on => { setSoundOn(on); setSound(on); if (on) play('on'); }} />
+          images={wide ? undefined : images} onSelectImage={setSelectedImageId} />
 
         {wide && exportRow}
 

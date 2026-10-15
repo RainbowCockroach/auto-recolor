@@ -6,12 +6,7 @@ export type SoundName = 'press' | 'chunk' | 'select' | 'pop' | 'on' | 'off' | 'o
 let ctx: AudioContext | null = null;
 let out: GainNode | null = null;
 let noise: AudioBuffer | null = null;
-let enabled = true;
-
-export const setSoundOn = (on: boolean) => { enabled = on; };
-
 function audio() {
-  if (!enabled) return null;
   if (!ctx) {
     try { ctx = new AudioContext(); } catch { return null; }
     out = ctx.createGain();
@@ -108,7 +103,7 @@ export function tick(frac: number) {
 
 /** A tiny vibration on phones that support it (Android; iPhones ignore it). */
 export function buzz(ms = 8) {
-  if (enabled && 'vibrate' in navigator) navigator.vibrate(ms);
+  if ('vibrate' in navigator) navigator.vibrate(ms);
 }
 
 const PRESS = '.rb, .dial, .zoom-level';

@@ -140,7 +140,7 @@ It should feel like a cozy old game: every touch answers right away.
 - The gauge ticks once per step, higher as the value rises, and clunks at either end. Fast drags skip ticks rather than buzz.
 - Big moments: an arpeggio when an image is added, a coin when a download finishes (plus a star burst from the Download button) or a color is picked, a low buzz on errors.
 - Phones that can vibrate (Android) get a tiny buzz with each press and tick. iPhones ignore it.
-- A speaker button sits with the picture tools; the choice is saved (`auto-recolor.sound`).
+- There is no mute button on purpose: people turn the page or device volume down instead.
 - **Motion:** presses are instant (≈40ms) and releases spring back with overshoot (`--spring`). Chosen things boing (`@keyframes boing`), the pill and toggled buttons squish, the switch knob stretches while held, dials spin to new values, and the drawer and gauge sheet bounce into place. `prefers-reduced-motion` turns all of it off.
 
 ## Things to keep from the current app
