@@ -104,7 +104,7 @@ export function Drawer<T extends string>({ tabs, wide, initial, away, onShow }: 
             const on = isOpen && t.id === tab.id;
             return (
               <button key={t.id} type="button" className={`tab${on ? ' on' : ''}`} aria-current={on ? 'page' : undefined} onClick={() => pick(t.id)}>
-                <span className={`rb sm${on ? ' honey' : ''}`}>{t.icon}</span>{t.label}
+                <span className="rb sm">{t.icon}</span>{t.label}
               </button>
             );
           })}

@@ -42,8 +42,8 @@ Light theme only. Drop the current `prefers-color-scheme: dark` block.
 | `--soft` | `#5d564e` | secondary text, inactive labels |
 | `--muted` | `#655e55` | counts, hex codes, numbers |
 | `--line` | `#c6c1b9` | the 3D "base" under raised things |
-| `--honey` | `#f8d27a` → `#e4a93f` (gradient), base `#b9852d`, ink `#3d2a0c` | main action (Download) and the open tab, nothing else |
-| `--sage` | `#8fb7a5` | dial arc, switch on |
+| `--honey` | `#f8d27a` → `#e4a93f` (gradient), base `#b9852d`, ink `#3d2a0c` | "do it": main actions (Download, Add, Done), nothing else |
+| `--sage` | `#8fb7a5` | "on or chosen": dial arc, switch on, pressed buttons, the open tab, pick mode |
 
 The canvas draws `--soft` as `#7a7268` and `--muted` as `#8a8278`. Those are too faint to read on the grey backgrounds (2.9–4.3:1), so use the darker values above. They pass 4.5:1 on every surface. This overrides the canvas.
 
@@ -66,7 +66,7 @@ There is no monospace font any more. Hex codes and file names use Fredoka.
 - **Honey button:** same shape with the honey gradient and base `#b9852d`. Download is a wide honey pill: "⬇ Download 103".
 - **Card:** radius 24px (28px on tablet), `box-shadow: inset 0 2px 0 #fff, 0 5px 0 #d3cfc8, 0 10px 22px rgba(70,60,50,.1)`.
 - **Canvas well** (behind the picture): `--well` with `inset 0 3px 8px rgba(60,50,40,.18)`, radius 16px, inside a card with 10px padding.
-- **Paint drop** (swatch): a circle with the color as `background-color`, plus `background-image: radial-gradient(circle at 34% 28%, rgba(255,255,255,.6) 0, transparent 32%)` and `box-shadow: inset 0 -4px 6px rgba(0,0,0,.22), inset 0 2px 2px rgba(255,255,255,.3), 0 2px 0 rgba(60,50,40,.22)`. Selected: add `0 0 0 3px <surface>, 0 0 0 6px var(--ink)` and `scale(1.08)`. 30px in the phone tray (34px in the Colors drawer), 40px on tablet.
+- **Paint drop** (swatch): a circle with the color as `background-color`, plus a faint, wide sheen `radial-gradient(circle at 38% 30%, rgba(255,255,255,.22) 0, transparent 60%)` and `box-shadow: inset 0 -3px 5px rgba(0,0,0,.14), inset 0 2px 1px rgba(255,255,255,.25), 0 2px 0 rgba(60,50,40,.22)`. Matte like the clay buttons, not a glossy marble. Selected: add `0 0 0 3px <surface>, 0 0 0 6px var(--ink)` and `scale(1.08)`. 30px in the phone tray (34px in the Colors drawer), 40px on tablet.
 - **Pill toggle** (Painting/Flat/Manga, Original/Result): a sunken `--inset` track; the active option is a raised white pill.
 - **Dial** (`DialButton` in `Controls.tsx`): every number setting shows as a small round dial (80px), 3 per row. A ridged rim (`repeating-conic-gradient`) with a raised center face that shows the value in Fredoka, a small ink notch that turns with the value through 270°, and a 6px sage arc around it. It only shows the value: tapping it opens the big gauge. The open one gets an ink ring.
 - **Big gauge** (`Gauge.tsx`, board "Phone · Tap a dial → big gauge" in the canvas). Turning small dials with a thumb was too hard, so they open this instead:
@@ -84,7 +84,7 @@ From top to bottom; nothing is fixed to the top. Keep it compact: 8–10px page 
 
 1. **Picture card** (takes all spare height). Inside the canvas well:
    - the recolored result, large
-   - top-left: a 50px round **original bubble** with a small pipette badge. Tapping it starts pick mode: the bubble gets a honey ring, the big picture shows the original with a "Tap the color to replace" chip, and the next tap on the picture picks the color and ends pick mode
+   - top-left: a 50px round **original bubble** with a small pipette badge. Tapping it starts pick mode: the bubble gets a sage ring, the big picture shows the original with a "Tap the color to replace" chip, and the next tap on the picture picks the color and ends pick mode
    - top-right: 36px round **Background** and **Mask** buttons
    - bottom-left, only with 2+ images: a row of small round **image bubbles** (38px); tapping one switches the preview to that image. The drawer's Images tab still adds and removes images
    - bottom-right: round **View big** button (opens the viewer)
@@ -99,7 +99,7 @@ From top to bottom; nothing is fixed to the top. Keep it compact: 8–10px page 
 
    **How the drawer opens and closes:**
    - Tapping or dragging up the handle opens the drawer on the last used tab (Tune at first).
-   - Inside, tapping a tab button switches to it, and the button turns honey. Tapping the open tab, or the handle, closes it.
+   - Inside, tapping a tab button switches to it, and the button turns sage and sinks in. Tapping the open tab, or the handle, closes it.
    - Dragging the handle follows the finger and snaps to closed or open.
    - Open height is about 520px of 844, so the top of the picture stays visible while tuning.
    - When the Colors tab is open it goes taller (about 640px).
