@@ -43,7 +43,7 @@ export function ColorPicker({ palettes, selectedColorId, onSelect, actions }: Pr
         {actions}
       </div>
 
-      {palettes.length > 1 && <div className="pals" role="tablist" aria-label="Palettes">
+      {palettes.length > 1 && <div className="pals" data-tick="90" role="tablist" aria-label="Palettes">
         {palettes.map(p => (
           <button key={p.id} type="button" role="tab" aria-selected={p.id === palette.id} className="pal"
             onClick={() => { if (p.id !== palette.id) onSelect(p.colors[0]!.id); }}>
@@ -55,7 +55,7 @@ export function ColorPicker({ palettes, selectedColorId, onSelect, actions }: Pr
         ))}
       </div>}
 
-      <div className="tray" ref={tray} role="radiogroup" aria-label={`${palette.name} colors`}>
+      <div className="tray" ref={tray} data-tick="40" role="radiogroup" aria-label={`${palette.name} colors`}>
         {colors.map(c => (
           <button key={c.id} type="button" className="drop" role="radio" aria-checked={c.id === color.id}
             aria-label={c.name} title={`${c.name} ${c.hex}`} style={{ backgroundColor: c.hex }} onClick={() => onSelect(c.id)} />

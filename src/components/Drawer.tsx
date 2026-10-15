@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react';
+import { play } from '../sound';
 
 export interface DrawerTab<T extends string> {
   id: T;
@@ -40,6 +41,11 @@ export function Drawer<T extends string>({ tabs, wide, initial, away }: Props<T>
   // A drag ends with a click on whatever is under the finger; swallow it.
   const dragged = useRef(false);
   const vh = useViewportHeight();
+  const wasOpen = useRef(open);
+  useEffect(() => {
+    if (wasOpen.current !== open) play(open ? 'open' : 'close');
+    wasOpen.current = open;
+  }, [open]);
 
   const tab = tabs.find(t => t.id === tabId) ?? tabs[0]!;
   const openH = Math.round(tab.tall ? Math.min(640, vh * 0.78) : Math.min(520, vh * 0.64));

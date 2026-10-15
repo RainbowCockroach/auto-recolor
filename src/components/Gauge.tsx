@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Check, ChevronLeft, ChevronRight, Minus, Plus } from 'lucide-react';
+import { buzz, play, tick } from '../sound';
 
 export interface DialSpec<K extends string> {
   key: K;
@@ -42,9 +43,15 @@ export function Gauge<K extends string>({ dials, active: d, onFocus, onClose }: 
   const { value, min, max, disabled } = d;
   const set = (v: number) => {
     const next = Math.max(min, Math.min(max, Math.round(v)));
-    if (!disabled && next !== value) d.onChange(next);
+    if (disabled || next === value) return;
+    // hitting either end clunks like a knob's end stop
+    if (next === min || next === max) { play('chunk'); buzz(18); } else tick((next - min) / (max - min));
+    d.onChange(next);
   };
+  const setRef = useRef(set);
+  useEffect(() => { setRef.current = set; });
 
+  useEffect(() => { play('open'); }, []);
   useEffect(() => { ref.current?.focus({ preventScroll: true }); }, [d.key]);
 
   // React's onWheel is passive, so it can't stop the page from scrolling under the gauge
@@ -53,12 +60,11 @@ export function Gauge<K extends string>({ dials, active: d, onFocus, onClose }: 
     if (!el) return;
     const wheel = (e: WheelEvent) => {
       e.preventDefault();
-      const next = Math.max(min, Math.min(max, value + (e.deltaY < 0 ? 1 : -1)));
-      if (!disabled && next !== value) d.onChange(next);
+      setRef.current(value + (e.deltaY < 0 ? 1 : -1));
     };
     el.addEventListener('wheel', wheel, { passive: false });
     return () => el.removeEventListener('wheel', wheel);
-  }, [d, value, min, max, disabled]);
+  }, [value]);
 
   const i = dials.findIndex(x => x.key === d.key);
   const go = (n: number) => onFocus(dials[(i + n + dials.length) % dials.length]!.key);
@@ -74,7 +80,7 @@ export function Gauge<K extends string>({ dials, active: d, onFocus, onClose }: 
           <span className="gauge-dots" aria-hidden="true">{dials.map(x => <i key={x.key} className={x.key === d.key ? 'on' : undefined} />)}</span>
         </div>
         <button type="button" className="rb sm" aria-label="Next setting" title="Next setting" onClick={() => go(1)}><ChevronRight size={19} /></button>
-        <button type="button" className="rb sm honey" aria-label="Done" title="Done" onClick={onClose}><Check size={19} /></button>
+        <button type="button" className="rb sm honey" data-sound="close" aria-label="Done" title="Done" onClick={onClose}><Check size={19} /></button>
       </div>
 
       <button ref={ref} type="button" className="gauge" role="slider" title={d.hint} aria-label={d.label} aria-disabled={disabled}
@@ -96,7 +102,7 @@ export function Gauge<K extends string>({ dials, active: d, onFocus, onClose }: 
           drag.current = null;
           if (!g || g.moved) return;
           const now = Date.now();
-          if (now - lastTap.current < DOUBLE_TAP_MS) { set(d.initial); lastTap.current = 0; } else lastTap.current = now;
+          if (now - lastTap.current < DOUBLE_TAP_MS) { if (value !== d.initial) play('rewind'); set(d.initial); lastTap.current = 0; } else lastTap.current = now;
         }}
         onPointerCancel={() => { drag.current = null; }}
         onKeyDown={e => {
@@ -116,7 +122,7 @@ export function Gauge<K extends string>({ dials, active: d, onFocus, onClose }: 
           <path className="g-track g-fill" d="M 40 170 A 120 120 0 0 1 280 170" strokeDasharray={`${f * ARC} 999`} />
           <circle className="g-thumb" cx={tx} cy={ty} r={22} />
           <circle cx={tx} cy={ty} r={15} fill="#fff" />
-          <text className="g-value" x={160} y={150} textAnchor="middle">{d.format(value)}</text>
+          <text key={value} className="g-value" x={160} y={150} textAnchor="middle">{d.format(value)}</text>
           <text className="g-end" x={40} y={196} textAnchor="middle">{d.format(min)}</text>
           <text className="g-end" x={280} y={196} textAnchor="middle">{d.format(max)}</text>
         </svg>

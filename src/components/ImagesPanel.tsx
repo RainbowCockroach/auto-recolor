@@ -23,7 +23,7 @@ export function ImagesPanel({ images, selectedId, onSelect, onRemove, onAdd }: P
             <BitmapCanvas bitmap={img.thumb} pixelated={Math.max(img.width, img.height) < 200} />
           </button>
           {img.id === selectedId && (
-            <button type="button" className="rb xs bub-x" aria-label={`Remove ${img.name}`} title="Remove" onClick={() => onRemove(img.id)}>
+            <button type="button" className="rb xs bub-x" data-sound="poof" aria-label={`Remove ${img.name}`} title="Remove" onClick={() => onRemove(img.id)}>
               <X size={14} />
             </button>
           )}

@@ -3,6 +3,7 @@ import { X, ZoomIn, ZoomOut } from 'lucide-react';
 import { BitmapCanvas } from './BitmapCanvas';
 import { Pill } from './Controls';
 import { FIT, MAX_SCALE, PIXEL_ZOOM, ZoomStage, zoomAt, type View } from './ZoomStage';
+import { play } from '../sound';
 
 export type Side = 'original' | 'result';
 
@@ -26,7 +27,7 @@ export function ImageViewer({ side, original, result, pixelated, captions, onSid
 
   useEffect(() => {
     const d = ref.current;
-    if (d && !d.open) d.showModal();
+    if (d && !d.open) { d.showModal(); play('open'); }
   }, []);
 
   return (
@@ -39,7 +40,7 @@ export function ImageViewer({ side, original, result, pixelated, captions, onSid
         <Pill label="Show" value={side} onChange={onSide}
           options={[{ value: 'original', label: 'Original' }, { value: 'result', label: 'Result' }]} />
         <span className="viewer-caption">{captions[side]}</span>
-        <button type="button" className="rb" aria-label="Close" title="Close" onClick={() => { ref.current?.close(); onClose(); }}><X size={22} /></button>
+        <button type="button" className="rb" data-sound="close" aria-label="Close" title="Close" onClick={() => { ref.current?.close(); onClose(); }}><X size={22} /></button>
       </div>
       <p className="viewer-hint">{view.scale > 1 ? 'Drag to look around' : coarsePointer() ? 'Pinch to zoom' : 'Scroll to zoom'}</p>
       <div className="float viewer-zoom">

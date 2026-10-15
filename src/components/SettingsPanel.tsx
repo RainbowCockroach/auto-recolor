@@ -78,7 +78,7 @@ export function SettingsPanel({ settings: s, image, stats, focus, inlineGauge, o
           { value: 'legacy', label: 'Legacy', icon: <History size={18} />, title: 'The old Natural mode, to match earlier results.' },
           { value: 'stylized', label: 'Stylized', icon: <Sparkles size={18} />, title: 'Gradient map: cool shadows, your color, warm highlights.' },
         ]} />
-        <button type="button" className="rb sm" aria-label="Reset all" title="Reset all"
+        <button type="button" className="rb sm" data-sound="rewind" aria-label="Reset all" title="Reset all"
           onClick={() => onChange({ ...DEFAULT_SETTINGS, mode: s.mode, scope: s.scope })}>
           <RotateCcw size={19} />
         </button>

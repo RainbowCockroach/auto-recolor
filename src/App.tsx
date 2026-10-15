@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Download, FolderDown, Image as ImageIcon, LayoutGrid, Palette as PaletteIcon, SlidersHorizontal, Undo2 } from 'lucide-react';
 import { DEFAULT_SETTINGS } from './engine/types';
 import { canSaveToFolder, downloadZip, saveToFolder } from './export';
@@ -13,9 +13,11 @@ import { OutputPanel } from './components/OutputPanel';
 import { PalettesPanel } from './components/PalettesPanel';
 import { PreviewPanel, type Background } from './components/PreviewPanel';
 import { SettingsPanel, tuneDials, type DialKey } from './components/SettingsPanel';
+import { installSounds, play, setSoundOn } from './sound';
 import { PRIORITY, pool } from './worker/pool';
 
 const readBackground = (v: unknown): Background | null => (v === 'checker' || v === 'light' || v === 'dark' ? v : null);
+const readFlag = (v: unknown): boolean | null => (typeof v === 'boolean' ? v : null);
 const readColorId = (v: unknown): string | null => (typeof v === 'string' ? v : null);
 
 const WIDE = '(min-width: 900px)';
@@ -47,6 +49,9 @@ export function App() {
   const [saving, setSaving] = useState<{ done: number; total: number } | null>(null);
   const [dragging, setDragging] = useState(false);
   const [tuning, setTuning] = useState<DialKey | null>(null);
+  const [soundOn, setSound] = usePersistentState('auto-recolor.sound', readFlag, () => true);
+  // bumped on each finished download, to replay the little star burst
+  const [cheer, setCheer] = useState(0);
   const fileInput = useRef<HTMLInputElement>(null);
   const wide = useWide();
 
@@ -63,6 +68,15 @@ export function App() {
 
   const preview = usePreview(image, target?.color ?? null, settings, showMask);
   const thumbs = useThumbs(images, palettes, settings, image?.id ?? null);
+
+  useEffect(() => installSounds(), []);
+  useEffect(() => setSoundOn(soundOn), [soundOn]);
+
+  useEffect(() => {
+    if (!cheer) return;
+    const t = setTimeout(() => setCheer(0), 900);
+    return () => clearTimeout(t);
+  }, [cheer]);
 
   // finished messages fade on their own; "…" ones stay until replaced
   useEffect(() => {
@@ -88,11 +102,13 @@ export function App() {
         const img = await loadImage(file, taken);
         taken.push(img.folder);
         setImages(prev => [...prev, img]);
+        play('powerup');
         setSelectedImageId(prev => prev ?? img.id);
       } catch (e) {
         errors.push(e instanceof Error ? e.message : String(e));
       }
     }
+    if (errors.length) play('error');
     setStatus(errors.join(' '));
   }, [images]);
 
@@ -109,8 +125,11 @@ export function App() {
     if (!image) return;
     const id = image.id;
     pool.run(id, api => api.probe(id, x, y), { priority: PRIORITY.preview }).then(r => {
-      if (r.ok && r.hue !== undefined) setPickedHue(id, r.hue);
-      else setStatus(r.reason === 'transparent' ? 'That spot is transparent. Tap the image itself.' : 'That pixel is almost grey. Tap a more colorful spot.');
+      if (r.ok && r.hue !== undefined) { play('coin'); setPickedHue(id, r.hue); }
+      else {
+        play('error');
+        setStatus(r.reason === 'transparent' ? 'That spot is transparent. Tap the image itself.' : 'That pixel is almost grey. Tap a more colorful spot.');
+      }
     }, e => console.error(e));
   };
 
@@ -158,11 +177,15 @@ export function App() {
       if (kind === 'zip') {
         const { count, name } = await downloadZip(images, palettes, settings, progress);
         setStatus(`Downloaded ${name} with ${count} files.`);
+        play('coin');
+        setCheer(Date.now());
       } else {
         const result = await saveToFolder(images, palettes, settings, progress);
         setStatus(result ? `Saved ${result.count} files into ${result.name}/` : '');
+        if (result) { play('coin'); setCheer(Date.now()); }
       }
     } catch (e) {
+      play('error');
       setStatus(`Saving stopped: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setSaving(null);
@@ -192,6 +215,7 @@ export function App() {
         aria-label={saving ? `Saving ${saving.done} of ${saving.total}` : `Download ZIP, ${fileCount} files`} title="Download ZIP"
         onClick={() => void runExport('zip')}>
         <Download size={20} />{saving ? `${saving.done}/${saving.total}` : wide ? `Download ${fileCount}` : fileCount}
+        {cheer > 0 && <span key={cheer} className="burst" aria-hidden="true">{Array.from({ length: 10 }, (_, n) => <i key={n} style={{ '--n': n } as CSSProperties} />)}</span>}
       </button>
       {canSaveToFolder() && (
         <button type="button" className="rb" disabled={!!saving || !fileCount} aria-label="Save to folder" title="Save to folder"
@@ -217,7 +241,8 @@ export function App() {
       <main className="center">
         <PreviewPanel image={image} target={target} preview={preview} showMask={showMask} background={background}
           onShowMask={setShowMask} onBackground={setBackground} onPick={pick} onAddClick={() => fileInput.current?.click()}
-          images={wide ? undefined : images} onSelectImage={setSelectedImageId} />
+          images={wide ? undefined : images} onSelectImage={setSelectedImageId} soundOn={soundOn}
+          onSound={on => { setSoundOn(on); setSound(on); if (on) play('on'); }} />
 
         {wide && exportRow}
 
@@ -236,7 +261,7 @@ export function App() {
         <div className="toast" role="status">
           <span>{message}</span>
           {undo && (
-            <button type="button" className="rb sm" aria-label="Undo" title="Undo" onClick={() => { setPalettes(undo.palettes); setUndo(null); }}>
+            <button type="button" className="rb sm" data-sound="rewind" aria-label="Undo" title="Undo" onClick={() => { setPalettes(undo.palettes); setUndo(null); }}>
               <Undo2 size={19} />
             </button>
           )}

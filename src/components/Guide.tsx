@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Eye, Info, RotateCcw, X } from 'lucide-react';
+import { play } from '../sound';
 
 // pictures made by scripts/guide-images.ts
 const src = (name: string) => `${import.meta.env.BASE_URL}guide/${name}.png`;
@@ -28,12 +29,12 @@ export function Guide({ onClose }: { onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const d = ref.current;
-    if (d && !d.open) d.showModal();
+    if (d && !d.open) { d.showModal(); play('open'); }
   }, []);
 
   return (
     <dialog ref={ref} className="guide" aria-label="Guide" onClose={onClose}>
-      <button type="button" className="rb guide-close" aria-label="Close" title="Close" onClick={() => ref.current?.close()}><X size={22} /></button>
+      <button type="button" className="rb guide-close" data-sound="close" aria-label="Close" title="Close" onClick={() => ref.current?.close()}><X size={22} /></button>
       <div className="guide-inner">
         <header>
           <h1>What the Tune tab does</h1>

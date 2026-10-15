@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Check, Plus, X } from 'lucide-react';
 import { PRESETS, type Preset, type PresetUse } from '../presets';
 import { Pill } from './Controls';
+import { play } from '../sound';
 
 interface Props {
   open: boolean;
@@ -19,7 +20,7 @@ export function PresetLibrary({ open, addedIds, onAdd, onClose }: Props) {
   useEffect(() => {
     const dialog = ref.current;
     if (!dialog) return;
-    if (open && !dialog.open) dialog.showModal();
+    if (open && !dialog.open) { dialog.showModal(); play('open'); }
     if (!open && dialog.open) dialog.close();
   }, [open]);
 
@@ -31,7 +32,7 @@ export function PresetLibrary({ open, addedIds, onAdd, onClose }: Props) {
       <div className="library-inner">
         <div className="library-head">
           <h2 id="library-title">Palette library</h2>
-          <button type="button" className="rb sm" aria-label="Close library" title="Close" onClick={onClose}><X size={19} /></button>
+          <button type="button" className="rb sm" data-sound="close" aria-label="Close library" title="Close" onClick={onClose}><X size={19} /></button>
         </div>
         <Pill label="Show" value={filter} onChange={setFilter}
           options={[{ value: 'all', label: 'All' }, { value: 'hair', label: 'Hair' }, { value: 'furniture', label: 'Furniture' }, { value: 'skin', label: 'Skin' }]} />

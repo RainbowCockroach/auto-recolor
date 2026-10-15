@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Contrast, Eye, ImagePlus, Maximize2, Pipette } from 'lucide-react';
+import { Contrast, Eye, ImagePlus, Maximize2, Pipette, Volume2, VolumeOff } from 'lucide-react';
 import type { PreviewState } from '../hooks';
 import type { LoadedImage } from '../images';
 import type { OutputFile } from '../model';
@@ -23,12 +23,14 @@ interface Props {
   /** Quick image switcher inside the picture; only passed on phones, where the image list sits in the drawer. */
   images?: LoadedImage[];
   onSelectImage?: (id: string) => void;
+  soundOn: boolean;
+  onSound: (on: boolean) => void;
 }
 
 /** Sprites smaller than this are drawn with hard pixel edges when scaled up. */
 const PIXEL_ART_SIDE = 200;
 
-export function PreviewPanel({ image, target, preview, showMask, background, onShowMask, onBackground, onPick, onAddClick, images = [], onSelectImage }: Props) {
+export function PreviewPanel({ image, target, preview, showMask, background, onShowMask, onBackground, onPick, onAddClick, images = [], onSelectImage, soundOn, onSound }: Props) {
   const pixelated = !!image && Math.max(image.width, image.height) < PIXEL_ART_SIDE;
   // Both tied to the image they were started for, so they end when another image is picked.
   const [viewing, setViewing] = useState<{ id: string; side: Side } | null>(null);
@@ -67,18 +69,8 @@ export function PreviewPanel({ image, target, preview, showMask, background, onS
               <BitmapCanvas bitmap={image.thumb} pixelated={pixelated} />
               <span className="badge"><Pipette size={14} /></span>
             </button>
-            <div className="stage-tools">
-              <button type="button" className="rb sm" aria-label={`Background: ${background}`} title={`Background: ${background}`}
-                onClick={() => onBackground(NEXT_BG[background])}>
-                <Contrast size={19} />
-              </button>
-              <button type="button" className="rb sm" aria-pressed={showMask} aria-label="Show what gets recolored" title="Show what gets recolored"
-                onClick={() => onShowMask(!showMask)}>
-                <Eye size={19} />
-              </button>
-            </div>
             {images.length > 1 && (
-              <div className="stage-imgs" aria-label="Images">
+              <div className="stage-imgs" data-tick="44" aria-label="Images">
                 {images.map(img => (
                   <button key={img.id} type="button" className="mini-bub" aria-current={img.id === image.id}
                     aria-label={img.name} title={img.name} onClick={() => onSelectImage?.(img.id)}>
@@ -92,6 +84,24 @@ export function PreviewPanel({ image, target, preview, showMask, background, onS
             </button>
           </>
         )}
+        <div className="stage-tools">
+          {image && (
+            <>
+              <button type="button" className="rb sm" aria-label={`Background: ${background}`} title={`Background: ${background}`}
+                onClick={() => onBackground(NEXT_BG[background])}>
+                <Contrast size={19} />
+              </button>
+              <button type="button" className="rb sm" aria-pressed={showMask} aria-label="Show what gets recolored" title="Show what gets recolored"
+                onClick={() => onShowMask(!showMask)}>
+                <Eye size={19} />
+              </button>
+            </>
+          )}
+          <button type="button" className="rb sm" aria-label={soundOn ? 'Sound off' : 'Sound on'} title={soundOn ? 'Sound off' : 'Sound on'}
+            onClick={() => onSound(!soundOn)}>
+            {soundOn ? <Volume2 size={19} /> : <VolumeOff size={19} />}
+          </button>
+        </div>
       </div>
       {image && viewSide && (
         <ImageViewer side={viewSide} original={original} result={preview?.result} pixelated={pixelated}

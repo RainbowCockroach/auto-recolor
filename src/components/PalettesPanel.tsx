@@ -86,7 +86,7 @@ export function PalettesPanel({ palettes, selectedColorId, onSelectColor, onChan
             <input className="pname" aria-label="Palette name" value={p.name}
               onChange={e => updatePalette(p.id, x => ({ ...x, name: e.target.value }))} />
             <span className="count">{p.colors.length}</span>
-            <button type="button" className="rb sm flat" aria-label={`Remove palette ${p.name}`} title="Remove palette"
+            <button type="button" className="rb sm flat" data-sound="poof" aria-label={`Remove palette ${p.name}`} title="Remove palette"
               onClick={() => onChange(palettes.filter(x => x.id !== p.id), `palette “${p.name}”`)}>
               <Trash2 size={19} />
             </button>
@@ -103,7 +103,7 @@ export function PalettesPanel({ palettes, selectedColorId, onSelectColor, onChan
               <input className="field" aria-label="Color name" value={c.name}
                 onChange={e => updateColor(p.id, c.id, { name: e.target.value })} />
               <HexField key={c.id} hex={c.hex} onCommit={hex => updateColor(p.id, c.id, { hex })} />
-              <button type="button" className="rb sm flat" aria-label={`Remove ${c.name}`} title="Remove color" onClick={() => removeColor(p, c)}>
+              <button type="button" className="rb sm flat" data-sound="poof" aria-label={`Remove ${c.name}`} title="Remove color" onClick={() => removeColor(p, c)}>
                 <X size={19} />
               </button>
             </div>
