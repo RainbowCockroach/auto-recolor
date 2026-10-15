@@ -1,4 +1,4 @@
-export type Mode = 'natural' | 'legacy' | 'stylized';
+export type Mode = 'painting' | 'flat' | 'manga';
 export type Scope = 'main' | 'whole';
 
 export interface Settings {
@@ -9,23 +9,23 @@ export interface Settings {
   tolerance: number;
   /** 0–1, like layer opacity: how much of the recolor is applied over the original. */
   strength: number;
-  // natural and legacy modes
+  // painting and flat modes
   /** 0–1. At 1 the typical recolored pixel lands exactly on the target's lightness. */
   match: number;
   /** 0–1.5. How much of the original hue variation survives. */
   variety: number;
   /** Multiplier on the target's saturation. */
   saturation: number;
-  // stylized mode
+  // manga mode
   /** Degrees shadows lean blue and highlights lean yellow. */
   shift: number;
-  // natural and stylized modes
+  // painting and manga modes
   /** Multiplier on how far shadows and highlights reach from the target color. */
   contrast: number;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
-  mode: 'natural',
+  mode: 'painting',
   scope: 'main',
   tolerance: 25,
   strength: 1,

@@ -85,26 +85,26 @@ export function Guide({ onClose }: { onClose: () => void }) {
         </section>
 
         <section className="card">
-          <h2>Style <span className="kind modes">Natural · Legacy · Stylized</span></h2>
+          <h2>Style <span className="kind modes">Painting · Flat · Manga</span></h2>
           <p>Three ways to put the new color on. On middle colors like blue they look about the same. Light and dark colors show the difference.</p>
           <div className="shelf">
-            <div className="colhead">Natural</div><div className="colhead">Legacy</div><div className="colhead">Stylized</div>
+            <div className="colhead">Painting</div><div className="colhead">Flat</div><div className="colhead">Manga</div>
             <div className="rowhead"><span className="dot" style={{ background: '#4f8fe0' }} />Blue</div>
-            <Fig name="mode-natural-blue" alt="Natural, blue" />
-            <Fig name="mode-legacy-blue" alt="Legacy, blue" />
-            <Fig name="mode-stylized-blue" alt="Stylized, blue" />
+            <Fig name="mode-painting-blue" alt="Painting, blue" />
+            <Fig name="mode-flat-blue" alt="Flat, blue" />
+            <Fig name="mode-manga-blue" alt="Manga, blue" />
             <div className="rowhead"><span className="dot" style={{ background: '#f2e6b0' }} />Cream</div>
-            <Fig name="mode-natural-cream" alt="Natural, cream: shading stays" note="shading stays" />
-            <Fig name="mode-legacy-cream" alt="Legacy, cream: flat and washed out" note="flat, washed out" />
-            <Fig name="mode-stylized-cream" alt="Stylized, cream: dark warm shadows" note="dark warm shadows" />
+            <Fig name="mode-painting-cream" alt="Painting, cream: shading stays" note="shading stays" />
+            <Fig name="mode-flat-cream" alt="Flat, cream: flat and washed out" note="flat, washed out" />
+            <Fig name="mode-manga-cream" alt="Manga, cream: dark warm shadows" note="dark warm shadows" />
             <div className="rowhead"><span className="dot" style={{ background: '#2c3a66' }} />Navy</div>
-            <Fig name="mode-natural-navy" alt="Natural, navy: shading stays" note="shading stays" />
-            <Fig name="mode-legacy-navy" alt="Legacy, navy: shadows squashed together" note="shadows squashed" />
-            <Fig name="mode-stylized-navy" alt="Stylized, navy: cool shadows, warm light" note="cool shadows, warm light" />
+            <Fig name="mode-painting-navy" alt="Painting, navy: shading stays" note="shading stays" />
+            <Fig name="mode-flat-navy" alt="Flat, navy: shadows squashed together" note="shadows squashed" />
+            <Fig name="mode-manga-navy" alt="Manga, navy: cool shadows, warm light" note="cool shadows, warm light" />
           </div>
-          <p><b>Natural</b> is a repaint by hand. Your shading stays as drawn: a shadow 30% darker stays 30% darker. Use this nearly always.</p>
-          <p><b>Legacy</b> is the old Natural. Light colors go flat, dark colors squash the shadows. Only for matching files you exported before.</p>
-          <p><b>Stylized</b> is a gradient map. Your shading colors are swapped for a ramp: cool dark shadows, your color, warm bright highlights. Poster-like.</p>
+          <p><b>Painting</b> is a repaint by hand. Your shading stays as drawn: a shadow 30% darker stays 30% darker. Use this nearly always.</p>
+          <p><b>Flat</b> is the old Painting. Light colors go flat, dark colors squash the shadows. Only for matching files you exported before.</p>
+          <p><b>Manga</b> is a gradient map. Your shading colors are swapped for a ramp: cool dark shadows, your color, warm bright highlights. Poster-like.</p>
         </section>
 
         <section className="card">
@@ -126,7 +126,7 @@ export function Guide({ onClose }: { onClose: () => void }) {
             <Fig name="match-50" alt="Brightness 50%: halfway" value="50%" note="halfway" />
             <Fig name="match-0" alt="Brightness 0%: dark olive, as dark as the original green" value="0%" note="keeps the green's own darkness" />
           </div>
-          <p className="note">At 0% only the hue changes. Not in Stylized.</p>
+          <p className="note">At 0% only the hue changes. Not in Manga.</p>
         </section>
 
         <section className="card">
@@ -137,7 +137,7 @@ export function Guide({ onClose }: { onClose: () => void }) {
             <Fig name="variety-100" alt="Hue variety 100%: yellow lights, red shadows" value="100%" def note="as drawn: yellow lights, red shadows" />
             <Fig name="variety-150" alt="Hue variety 150%: shadows go olive" value="150%" note="more" />
           </div>
-          <Tip>It can only scale drift that is already there. One-hue shading? Then it does almost nothing. Not in Stylized, which has its own drift: Shadow shift.</Tip>
+          <Tip>It can only scale drift that is already there. One-hue shading? Then it does almost nothing. Not in Manga, which has its own drift: Shadow shift.</Tip>
         </section>
 
         <section className="card">
@@ -148,7 +148,7 @@ export function Guide({ onClose }: { onClose: () => void }) {
             <Fig name="sat-100" alt="Saturation 100%: the palette pink" value="100%" def />
             <Fig name="sat-160" alt="Saturation 160%: hot pink" value="160%" note="vivid" />
           </div>
-          <p className="note">Not in Stylized.</p>
+          <p className="note">Not in Manga.</p>
         </section>
 
         <section className="card">
@@ -159,12 +159,12 @@ export function Guide({ onClose }: { onClose: () => void }) {
             <Fig name="contrast-100" alt="Contrast 100%: as drawn" value="100%" def note="as drawn" />
             <Fig name="contrast-160" alt="Contrast 160%: deep shadows, bright highlights" value="160%" note="punchy" />
           </div>
-          <p className="note">Not in Legacy. In Stylized it sets how dark the shadows and how bright the highlights get.</p>
+          <p className="note">Not in Flat. In Manga it sets how dark the shadows and how bright the highlights get.</p>
         </section>
 
         <section className="card">
           <h2>Shadow shift <Kind>dial</Kind></h2>
-          <p>Stylized only. Shadows lean to blue, highlights to yellow, like sunlight. This is how far. Shown in orange.</p>
+          <p>Manga only. Shadows lean to blue, highlights to yellow, like sunlight. This is how far. Shown in orange.</p>
           <div className="shelf">
             <Fig name="shift-0" alt="Shadow shift 0 degrees: plain brown shadows" value="0°" note="just darker and lighter" />
             <Fig name="shift-10" alt="Shadow shift 10 degrees: shadows a little redder" value="10°" def note="a little" />

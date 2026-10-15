@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CircleQuestionMark, History, Leaf, RotateCcw, Sparkles, Undo2 } from 'lucide-react';
+import { BookOpen, CircleQuestionMark, Paintbrush, RotateCcw, Square, Undo2 } from 'lucide-react';
 import { hueDistance, hueName, oklchToHex } from '../engine/color';
 import { DEFAULT_SETTINGS, type Settings, type Stats } from '../engine/types';
 import type { LoadedImage } from '../images';
@@ -28,16 +28,16 @@ export function tuneDials(s: Settings, onChange: (next: Settings) => void): Dial
   return [
     percent('strength', 'Strength', 0, 100, 'Blend between the original and the new color.'),
     degrees('tolerance', 'Hue range', 8, 70, v => `±${v}°`, 'How far from the main color still counts as the main color.', s.scope === 'whole'),
-    ...(s.mode !== 'stylized' ? [
+    ...(s.mode !== 'manga' ? [
       percent('match', 'Brightness', 0, 100, '100%: the typical pixel becomes exactly your color. 0%: keeps the original brightness.'),
       percent('variety', 'Hue variety', 0, 150, 'How much of the original color variation survives.'),
       percent('saturation', 'Saturation', 30, 160),
     ] : [
       degrees('shift', 'Shadow shift', 0, 40, v => `${v}°`, 'Shadows lean blue and highlights lean yellow.'),
     ]),
-    ...(s.mode !== 'legacy' ? [
+    ...(s.mode !== 'flat' ? [
       percent('contrast', 'Contrast', 40, 160,
-        s.mode === 'natural' ? 'How strong the shading is. 100% keeps it as painted.' : 'How dark the shadows and how bright the highlights get.'),
+        s.mode === 'painting' ? 'How strong the shading is. 100% keeps it as painted.' : 'How dark the shadows and how bright the highlights get.'),
     ] : []),
   ];
 }
@@ -74,9 +74,9 @@ export function SettingsPanel({ settings: s, image, stats, focus, inlineGauge, o
 
       <div className="tune-row">
         <Pill label="Style" value={s.mode} onChange={v => set('mode', v)} options={[
-          { value: 'natural', label: 'Natural', icon: <Leaf size={18} />, title: 'Keeps the original shading. Closest to a real repaint.' },
-          { value: 'legacy', label: 'Legacy', icon: <History size={18} />, title: 'The old Natural mode, to match earlier results.' },
-          { value: 'stylized', label: 'Stylized', icon: <Sparkles size={18} />, title: 'Gradient map: cool shadows, your color, warm highlights.' },
+          { value: 'painting', label: 'Painting', icon: <Paintbrush size={18} />, title: 'Keeps the original shading. Closest to a real repaint.' },
+          { value: 'flat', label: 'Flat', icon: <Square size={18} />, title: 'The old curve: light colors go flat. Matches earlier results.' },
+          { value: 'manga', label: 'Manga', icon: <BookOpen size={18} />, title: 'Gradient map: cool shadows, your color, warm highlights.' },
         ]} />
         <button type="button" className="rb sm" data-sound="rewind" aria-label="Reset all" title="Reset all"
           onClick={() => onChange({ ...DEFAULT_SETTINGS, mode: s.mode, scope: s.scope })}>

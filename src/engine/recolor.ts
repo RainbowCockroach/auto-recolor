@@ -17,11 +17,11 @@ const knee = (x: number) => {
 };
 
 /**
- * Natural: what a painter does by hand. Shading is multiplied, so a shadow 30% darker than the
+ * Painting: what a painter does by hand. Shading is multiplied, so a shadow 30% darker than the
  * main color stays 30% darker on any target, and highlights are spread over the room left under
  * white. Extra color (a blush on skin) is added, so it stays "this much pinker" on any tone.
  */
-function natural(t: ColorTable, st: Stats, target: Lch, s: Settings): Transform {
+function painting(t: ColorTable, st: Stats, target: Lch, s: Settings): Transform {
   // A target at or above the ceiling would turn the highlight slope negative and flip the shading.
   const m = Math.max(st.meanL, 0.01), T = Math.min(target.l, CEIL);
   const chroma = target.c * s.saturation;
@@ -41,11 +41,11 @@ function natural(t: ColorTable, st: Stats, target: Lch, s: Settings): Transform 
 }
 
 /**
- * Legacy: the first Natural mode, kept so old results can be reproduced. A gamma curve sends the
+ * Flat: the first Painting mode, kept so old results can be reproduced. A gamma curve sends the
  * group's average lightness to the target's while keeping black and white fixed, which flattens
  * shading on light targets and crushes it on dark ones.
  */
-function legacy(t: ColorTable, st: Stats, target: Lch, s: Settings): Transform {
+function flat(t: ColorTable, st: Stats, target: Lch, s: Settings): Transform {
   const gamma = Math.log(clamp(target.l, 0.05, 0.95)) / Math.log(clamp(st.meanL, 0.05, 0.95));
   const ratio = clamp(target.c / Math.max(st.meanC, 0.01), 0, 4) * s.saturation;
   // On the whole image, other parts (a brown trunk next to green leaves) sit far from the main hue.
@@ -67,10 +67,10 @@ const towards = (h: number, goal: number, amount: number) => {
 };
 
 /**
- * Stylized: a gradient map. Each pixel's lightness picks a spot on a three-stop ramp,
+ * Manga: a gradient map. Each pixel's lightness picks a spot on a three-stop ramp,
  * interpolated in OKLab: cool shadow → target (at the typical brightness) → warm highlight.
  */
-function stylized(t: ColorTable, st: Stats, target: Lch, s: Settings): Transform {
+function manga(t: ColorTable, st: Stats, target: Lch, s: Settings): Transform {
   const stop = (p: number, l: number, c: number, h: number) => ({ p, l, a: c * Math.cos(h * DEG), b: c * Math.sin(h * DEG) });
   const darkGap = target.l - Math.max(0.12, target.l * 0.38);
   const lightGap = (0.97 - target.l) * 0.65;
@@ -100,7 +100,7 @@ export interface RecoloredColors {
 export function recolorColors(t: ColorTable, mask: Float32Array, st: Stats, hex: string, s: Settings, depth: 8 | 16): RecoloredColors {
   const max = depth === 16 ? 65535 : 255;
   const target = hexToOklch(hex);
-  const transform = (s.mode === 'stylized' ? stylized : s.mode === 'legacy' ? legacy : natural)(t, st, target, s);
+  const transform = (s.mode === 'manga' ? manga : s.mode === 'flat' ? flat : painting)(t, st, target, s);
   const changed = new Uint8Array(t.size);
   const rgb = new Uint16Array(t.size * 3);
 

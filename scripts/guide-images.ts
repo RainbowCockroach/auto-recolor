@@ -85,10 +85,10 @@ const images: Record<string, Raster> = {
   'variety-0': run(ORANGE, { variety: 0 }), 'variety-100': run(ORANGE, { variety: 1 }), 'variety-150': run(ORANGE, { variety: 1.5 }),
   'sat-30': run(PINK, { saturation: 0.3 }), 'sat-100': run(PINK, { saturation: 1 }), 'sat-160': run(PINK, { saturation: 1.6 }),
   'contrast-40': run(BLUE, { contrast: 0.4 }), 'contrast-100': run(BLUE, { contrast: 1 }), 'contrast-160': run(BLUE, { contrast: 1.6 }),
-  'shift-0': run(ORANGE, { mode: 'stylized', shift: 0 }), 'shift-10': run(ORANGE, { mode: 'stylized', shift: 10 }), 'shift-40': run(ORANGE, { mode: 'stylized', shift: 40 }),
+  'shift-0': run(ORANGE, { mode: 'manga', shift: 0 }), 'shift-10': run(ORANGE, { mode: 'manga', shift: 10 }), 'shift-40': run(ORANGE, { mode: 'manga', shift: 40 }),
 };
 for (const [name, target] of [['blue', BLUE], ['cream', CREAM], ['navy', NAVY]] as const) {
-  for (const mode of ['natural', 'legacy', 'stylized'] as const) images[`mode-${mode}-${name}`] = run(target, { mode });
+  for (const mode of ['painting', 'flat', 'manga'] as const) images[`mode-${mode}-${name}`] = run(target, { mode });
 }
 
 mkdirSync(OUT, { recursive: true });

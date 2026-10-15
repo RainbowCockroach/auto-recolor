@@ -84,7 +84,7 @@ describe('analysis', () => {
   });
 });
 
-describe.each(['natural', 'legacy', 'stylized'] as const)('%s mode', mode => {
+describe.each(['painting', 'flat', 'manga'] as const)('%s mode', mode => {
   const s: Settings = { ...DEFAULT_SETTINGS, mode };
 
   test.each([8, 16] as const)('%i-bit: leaves turn red; trunk, transparency and alpha are untouched', depth => {
@@ -117,7 +117,7 @@ describe.each(['natural', 'legacy', 'stylized'] as const)('%s mode', mode => {
   });
 });
 
-test.each(['natural', 'legacy'] as const)('%s mode at full brightness match puts the typical leaf on the target lightness', mode => {
+test.each(['painting', 'flat'] as const)('%s mode at full brightness match puts the typical leaf on the target lightness', mode => {
   const s: Settings = { ...DEFAULT_SETTINGS, mode, variety: 0 };
   const src = makeTree();
   const { t, st, mask } = analyse(src, s);
@@ -155,7 +155,7 @@ const ramped = (hex: string, over: Partial<Settings> = {}) => {
   return { src, st, out: recolor(src, t, mask, st, hex, s), target: hexToOklch(hex) };
 };
 
-describe('natural mode shading', () => {
+describe('painting mode shading', () => {
   test('shadows keep their ratio to the main color on dark and light targets', () => {
     for (const hex of ['#3b2219', '#ffd8c4']) {
       const { src, st, out, target } = ramped(hex);
@@ -200,8 +200,8 @@ describe('natural mode shading', () => {
     expect(depth(flat.out)).toBeLessThan(depth(full.out) * 0.75);
   });
 
-  test('legacy mode is the old curve: light targets flatten the shadows', () => {
-    const now = ramped('#ffd8c4'), old = ramped('#ffd8c4', { mode: 'legacy' });
+  test('flat mode is the old curve: light targets flatten the shadows', () => {
+    const now = ramped('#ffd8c4'), old = ramped('#ffd8c4', { mode: 'flat' });
     const depth = (r: Raster) => lightnessOf(r, RAMP / 2) - lightnessOf(r, 0);
     expect(depth(old.out)).toBeLessThan(depth(now.out) * 0.6);
   });

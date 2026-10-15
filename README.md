@@ -19,9 +19,9 @@ Every push to `main` deploys it to https://rainbowcockroach.github.io/auto-recol
 1. **Images**: drop PNGs on the page.
 2. **Palettes**: add palettes and colors (color picker or hex code). Names become file names. Saved in your browser.
 3. **Mode**:
-   - **Natural** works like a painter: shading is multiplied (a shadow 30% darker stays 30% darker on any color), highlights fill the room left under white, and extra color like a blush is added on top.
-   - **Legacy** is the first Natural mode, kept so earlier results can be reproduced. It flattens shading on light colors and crushes it on dark ones.
-   - **Stylized** is a gradient map: cool shadows, your color in the middle, warm highlights.
+   - **Painting** works like a painter: shading is multiplied (a shadow 30% darker stays 30% darker on any color), highlights fill the room left under white, and extra color like a blush is added on top.
+   - **Flat** is the first Painting mode, kept so earlier results can be reproduced. It flattens shading on light colors and crushes it on dark ones.
+   - **Manga** is a gradient map: cool shadows, your color in the middle, warm highlights.
 4. **What to recolor**: *Main color only* finds the image's main color (e.g. the leaves) and leaves the rest alone. Click the preview to choose a different color.
 5. **Save**: “Save to folder…” (Chrome/Edge) writes the folders straight to disk. “Download ZIP” works everywhere.
 

@@ -27,7 +27,7 @@ test('saved palettes are checked before use', () => {
 });
 
 test('saved settings fall back to defaults when broken', () => {
-  expect(readSettings({ mode: 'stylized', tolerance: 40, strength: 'lots', scope: 'everything' }))
-    .toEqual({ ...DEFAULT_SETTINGS, mode: 'stylized', tolerance: 40 });
+  expect(readSettings({ mode: 'manga', tolerance: 40, strength: 'lots', scope: 'everything' }))
+    .toEqual({ ...DEFAULT_SETTINGS, mode: 'manga', tolerance: 40 });
   expect(readSettings(null)).toEqual(DEFAULT_SETTINGS);
 });
