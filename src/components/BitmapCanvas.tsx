@@ -14,7 +14,8 @@ export function BitmapCanvas({ bitmap, pixelated, title, onPick }: Props) {
 
   useEffect(() => {
     const canvas = ref.current;
-    if (!canvas || !bitmap) return;
+    // a closed bitmap has no size; its replacement is on the way
+    if (!canvas || !bitmap?.width) return;
     canvas.width = bitmap.width;
     canvas.height = bitmap.height;
     const cx = canvas.getContext('2d');

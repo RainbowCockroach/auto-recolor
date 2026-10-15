@@ -6,7 +6,7 @@
 import * as Comlink from 'comlink';
 import { buildColorTable, colorMask, computeStats, detectMainHues, GREY_CHROMA, type ColorTable } from '../engine/analyze';
 import { decodePng, encodePng, toRgba8 } from '../engine/png';
-import { applyColors, maskPreview, recolorColors, type RecoloredColors } from '../engine/recolor';
+import { applyColors, maskPreview, paintSample, recolorColors, sampleGrid, type RecoloredColors } from '../engine/recolor';
 import type { Raster, Settings, Stats } from '../engine/types';
 
 const THUMB_SIDE = 320;
@@ -18,6 +18,8 @@ interface Entry {
   depth: 8 | 16;
   /** Stats and mask only depend on scope, hue range and hue, so the last set is kept. */
   cache?: { key: string; stats: Stats; mask: Float32Array };
+  /** Big images only: the pixels thumbnails are made from, so they don't need a full-size recolor. */
+  thumbGrid?: { grid: Int32Array; width: number; height: number };
 }
 const images = new Map<string, Entry>();
 
@@ -54,14 +56,22 @@ async function bitmap(rgba: Uint8ClampedArray<ArrayBuffer>, width: number, heigh
 }
 
 export interface ProbeResult { ok: boolean; hue?: number; reason?: 'transparent' | 'grey' }
-export interface Want { full?: boolean; thumb?: boolean; png?: boolean }
+export interface Want { full?: boolean; thumb?: boolean; raster?: boolean }
+
+/** Samples at twice the thumbnail size, then shrinks with filtering, so edges stay smooth. */
+function makeThumbGrid({ width, height }: Raster): Entry['thumbGrid'] {
+  const scale = (2 * THUMB_SIDE) / Math.max(width, height);
+  if (scale >= 1) return undefined;
+  const w = Math.max(1, Math.round(width * scale)), h = Math.max(1, Math.round(height * scale));
+  return { grid: sampleGrid(width, height, w, h), width: w, height: h };
+}
 
 const api = {
   // ---------- owner ----------
   async load(id: string, bytes: ArrayBuffer) {
     const raster = decodePng(new Uint8Array(bytes));
     const table = buildColorTable(raster);
-    images.set(id, { raster, table, depth: raster.depth });
+    images.set(id, { raster, table, depth: raster.depth, thumbGrid: makeThumbGrid(raster) });
     const rgba = toRgba8(raster);
     const [full, thumb] = await Promise.all([
       bitmap(rgba, raster.width, raster.height),
@@ -80,17 +90,20 @@ const api = {
   /** Writes recolored colors into the image and returns what was asked for. */
   async paint(id: string, colors: RecoloredColors, want: Want) {
     const e = owned(id);
-    const out = applyColors(e.raster, e.table, colors);
     const transfers: Transferable[] = [];
-    const result: { full?: ImageBitmap; thumb?: ImageBitmap; png?: Uint8Array } = {};
-    if (want.full || want.thumb) {
-      const rgba = toRgba8(out);
-      if (want.full) transfers.push((result.full = await bitmap(rgba, out.width, out.height)));
-      if (want.thumb) transfers.push((result.thumb = await bitmap(rgba, out.width, out.height, THUMB_SIDE)));
+    const result: { full?: ImageBitmap; thumb?: ImageBitmap; raster?: Raster } = {};
+    const g = e.thumbGrid;
+    if (want.thumb && g) {
+      transfers.push((result.thumb = await bitmap(paintSample(e.raster, e.table, colors, g.grid), g.width, g.height, THUMB_SIDE)));
     }
-    if (want.png) {
-      result.png = encodePng(out);
-      transfers.push(result.png.buffer);
+    if (want.full || want.raster || (want.thumb && !g)) {
+      const out = applyColors(e.raster, e.table, colors);
+      if (want.full || (want.thumb && !g)) {
+        const rgba = toRgba8(out);
+        if (want.full) transfers.push((result.full = await bitmap(rgba, out.width, out.height)));
+        if (want.thumb && !g) transfers.push((result.thumb = await bitmap(rgba, out.width, out.height, THUMB_SIDE)));
+      }
+      if (want.raster) transfers.push((result.raster = out).data.buffer);
     }
     return Comlink.transfer(result, transfers);
   },
@@ -111,6 +124,12 @@ const api = {
     if (k < 0 || raster.data[i * 4 + 3]! / max < 0.5) return { ok: false, reason: 'transparent' };
     if (table.C[k]! < GREY_CHROMA) return { ok: false, reason: 'grey' };
     return { ok: true, hue: table.H[k]! };
+  },
+
+  // ---------- any worker ----------
+  encode(raster: Raster) {
+    const png = encodePng(raster);
+    return Comlink.transfer(png, [png.buffer]);
   },
 
   // ---------- any worker that has the table ----------

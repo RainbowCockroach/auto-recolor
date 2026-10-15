@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'vitest';
 import { buildColorTable, colorMask, computeStats, detectMainHue, detectMainHues } from '../src/engine/analyze';
 import { hexToOklch, hueName, mapToSrgb, oklchToHex, rgbToOklab } from '../src/engine/color';
-import { maskPreview, recolor } from '../src/engine/recolor';
+import { maskPreview, paintSample, recolor, recolorColors, sampleGrid } from '../src/engine/recolor';
+import { toRgba8 } from '../src/engine/png';
 import { DEFAULT_SETTINGS, type Raster, type Settings } from '../src/engine/types';
 
 const W = 20, H = 20;
@@ -235,4 +236,15 @@ test('mask preview fades unselected parts', () => {
   expect(view[LEAF * 4 + 3]).toBe(255);
   expect(view[TRUNK * 4 + 3]).toBeLessThan(80);
   expect(view[TRUNK * 4]).toBe(view[TRUNK * 4 + 1]); // grey
+});
+
+test.each([8, 16] as const)('sampled thumbnail matches the full recolor at the sampled pixels (%i-bit)', depth => {
+  const tree = makeTree(depth);
+  const { t, st, mask } = analyse(tree, DEFAULT_SETTINGS);
+  const colors = recolorColors(t, mask, st, '#d64541', DEFAULT_SETTINGS, depth);
+  const full = toRgba8(recolor(tree, t, mask, st, '#d64541', DEFAULT_SETTINGS));
+  const grid = sampleGrid(W, H, 7, 5);
+  const small = paintSample(tree, t, colors, grid);
+  expect(small.length).toBe(7 * 5 * 4);
+  grid.forEach((i, j) => expect(Array.from(small.slice(j * 4, j * 4 + 4))).toEqual(Array.from(full.slice(i * 4, i * 4 + 4))));
 });

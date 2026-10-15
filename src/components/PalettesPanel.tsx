@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { BookOpen, ChevronDown, ChevronUp, Plus, Trash2, X } from 'lucide-react';
 import { makeColor, makePalette, type Palette, type PaletteColor } from '../model';
+import { radioKeys, radioTab } from './Controls';
 import { PresetLibrary } from './PresetLibrary';
 
 interface Props {
@@ -108,9 +109,10 @@ export function PalettesPanel({ palettes, selectedColorId, onSelectColor, onChan
               </button>
             </div>
           ))}
-          <div className="drops" role="radiogroup" aria-label={`${p.name} colors`}>
-            {p.colors.map(c => (
+          <div className="drops" role="radiogroup" aria-label={`${p.name} colors`} onKeyDown={radioKeys}>
+            {p.colors.map((c, n) => (
               <button key={c.id} type="button" className="drop" role="radio" aria-checked={c.id === selectedColorId}
+                tabIndex={radioTab(n, p.colors.findIndex(x => x.id === selectedColorId))}
                 aria-label={c.name} title={`${c.name} ${c.hex}`} style={{ backgroundColor: c.hex }} onClick={() => onSelectColor(c.id)} />
             ))}
             <button type="button" className="drop add" aria-label={`Add color to ${p.name}`} title="Add color" onClick={() => {

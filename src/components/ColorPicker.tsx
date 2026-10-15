@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Palette } from '../model';
+import { radioKeys, radioTab } from './Controls';
 
 interface Props {
   palettes: Palette[];
@@ -43,9 +44,9 @@ export function ColorPicker({ palettes, selectedColorId, onSelect, actions }: Pr
         {actions}
       </div>
 
-      {palettes.length > 1 && <div className="pals" data-tick="90" role="tablist" aria-label="Palettes">
-        {palettes.map(p => (
-          <button key={p.id} type="button" role="tab" aria-selected={p.id === palette.id} className="pal"
+      {palettes.length > 1 && <div className="pals" data-tick="90" role="radiogroup" aria-label="Palettes" onKeyDown={radioKeys}>
+        {palettes.map((p, n) => (
+          <button key={p.id} type="button" role="radio" aria-checked={p.id === palette.id} tabIndex={radioTab(n, palettes.indexOf(palette))} className="pal"
             onClick={() => { if (p.id !== palette.id) onSelect(p.colors[0]!.id); }}>
             <span className="pal-dots" aria-hidden="true">
               {[0, Math.floor(p.colors.length / 2), p.colors.length - 1].map((k, n) => <i key={n} style={{ background: p.colors[k]!.hex }} />)}
@@ -55,9 +56,9 @@ export function ColorPicker({ palettes, selectedColorId, onSelect, actions }: Pr
         ))}
       </div>}
 
-      <div className="tray" ref={tray} data-tick="40" role="radiogroup" aria-label={`${palette.name} colors`}>
-        {colors.map(c => (
-          <button key={c.id} type="button" className="drop" role="radio" aria-checked={c.id === color.id}
+      <div className="tray" ref={tray} data-tick="40" role="radiogroup" aria-label={`${palette.name} colors`} onKeyDown={radioKeys}>
+        {colors.map((c, n) => (
+          <button key={c.id} type="button" className="drop" role="radio" aria-checked={c.id === color.id} tabIndex={radioTab(n, i)}
             aria-label={c.name} title={`${c.name} ${c.hex}`} style={{ backgroundColor: c.hex }} onClick={() => onSelect(c.id)} />
         ))}
       </div>

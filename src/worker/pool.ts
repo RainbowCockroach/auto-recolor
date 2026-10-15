@@ -52,6 +52,8 @@ export class WorkerPool {
     });
   }
 
+  get size() { return this.slots.length; }
+
   /** Gives a new image to the least busy worker. */
   assign(id: string) {
     const slot = this.slots.reduce((a, b) => (b.images < a.images ? b : a));
@@ -81,8 +83,7 @@ export class WorkerPool {
   runAnywhere<T>(id: string, run: (api: Api) => Promise<T>, opts: RunOptions): Promise<T> {
     const owner = this.home.get(id);
     if (!owner) return Promise.reject(new Cancelled());
-    const load = (s: Slot) => s.queue.length + (s.busy ? 1 : 0);
-    const slot = this.slots.reduce((best, s) => (load(s) < load(best) ? s : best), owner);
+    const slot = this.leastBusy(owner);
     return this.enqueue(slot, id, async api => {
       if (!slot.tables.has(id)) {
         const shared = await owner.api.shareTable(id);
@@ -92,6 +93,18 @@ export class WorkerPool {
       }
       return run(api);
     }, opts);
+  }
+
+  /** Runs on the least busy worker, for work that brings its own data. Still dropped if the image is removed. */
+  runFree<T>(id: string, run: (api: Api) => Promise<T>, opts: RunOptions): Promise<T> {
+    const owner = this.home.get(id);
+    if (!owner) return Promise.reject(new Cancelled());
+    return this.enqueue(this.leastBusy(owner), id, run, opts);
+  }
+
+  private leastBusy(start: Slot) {
+    const load = (s: Slot) => s.queue.length + (s.busy ? 1 : 0);
+    return this.slots.reduce((best, s) => (load(s) < load(best) ? s : best), start);
   }
 
   private enqueue<T>(slot: Slot, imageId: string, run: (api: Api) => Promise<T>, opts: RunOptions): Promise<T> {
@@ -132,4 +145,11 @@ export async function renderVariant({ id, hue, settings, hex, want }: RenderRequ
   // painting is quick, so it goes ahead of other waiting color math
   return pool.run(id, api => api.paint(id, Comlink.transfer(colors, [colors.changed.buffer, colors.rgb.buffer]), want),
     { ...opts, priority: opts.priority - 0.5 });
+}
+
+/** A full-size PNG of one variant. Encoding is the slow part, so it runs on whichever worker is free, not just the owner. */
+export async function renderPng(req: Omit<RenderRequest, 'want'>, opts: RunOptions) {
+  const { raster } = await renderVariant({ ...req, want: { raster: true } }, opts);
+  // ahead of painting, so finished pictures are encoded before more pile up in memory
+  return pool.runFree(req.id, api => api.encode(Comlink.transfer(raster!, [raster!.data.buffer])), { ...opts, priority: opts.priority - 0.75 });
 }

@@ -142,6 +142,33 @@ export function applyColors(raster: Raster, t: ColorTable, colors: RecoloredColo
   return { ...raster, data: out };
 }
 
+/** For each pixel of a w×h copy, the source pixel under its center. */
+export function sampleGrid(width: number, height: number, w: number, h: number): Int32Array {
+  const grid = new Int32Array(w * h);
+  for (let y = 0; y < h; y++) {
+    const row = Math.min(height - 1, Math.floor(((y + 0.5) * height) / h)) * width;
+    for (let x = 0; x < w; x++) grid[y * w + x] = row + Math.min(width - 1, Math.floor(((x + 0.5) * width) / w));
+  }
+  return grid;
+}
+
+/** 8-bit RGBA of only the pixels picked by `grid`, recolored. Thumbnails of big images without painting every pixel. */
+export function paintSample(raster: Raster, t: ColorTable, colors: RecoloredColors, grid: Int32Array): Uint8ClampedArray<ArrayBuffer> {
+  const src = raster.data;
+  const div = raster.depth === 16 ? 257 : 1;
+  const out = new Uint8ClampedArray(grid.length * 4);
+  for (let j = 0, o = 0; j < grid.length; j++, o += 4) {
+    const i = grid[j]!, s = i * 4, k = t.pixelColor[i]!;
+    if (k >= 0 && colors.changed[k]) {
+      out[o] = colors.rgb[k * 3]! / div; out[o + 1] = colors.rgb[k * 3 + 1]! / div; out[o + 2] = colors.rgb[k * 3 + 2]! / div;
+    } else {
+      out[o] = src[s]! / div; out[o + 1] = src[s + 1]! / div; out[o + 2] = src[s + 2]! / div;
+    }
+    out[o + 3] = src[s + 3]! / div;
+  }
+  return out;
+}
+
 export function recolor(raster: Raster, t: ColorTable, mask: Float32Array, st: Stats, hex: string, s: Settings): Raster {
   return applyColors(raster, t, recolorColors(t, mask, st, hex, s, raster.depth));
 }

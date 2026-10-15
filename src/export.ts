@@ -1,7 +1,7 @@
 import { zip, type AsyncZippable } from 'fflate';
 import type { Settings } from './engine/types';
 import { outputsFor, type Palette } from './model';
-import { PRIORITY, renderVariant } from './worker/pool';
+import { PRIORITY, pool, renderPng } from './worker/pool';
 import type { LoadedImage } from './images';
 
 type Writer = (folder: string, file: string, png: Uint8Array) => Promise<void>;
@@ -13,17 +13,26 @@ type Writer = (folder: string, file: string, png: Uint8Array) => Promise<void>;
 async function renderAll(images: LoadedImage[], palettes: Palette[], settings: Settings, write: Writer, onProgress: (done: number, total: number) => void) {
   const s = { ...settings };
   const jobs = images.flatMap(img => outputsFor(img.folder, structuredClone(palettes)).map(out => ({ img, out })));
-  let done = 0, failed = false, writing = Promise.resolve();
+  let next = 0, done = 0, failed = false, writing = Promise.resolve();
   onProgress(0, jobs.length);
 
-  await Promise.all(jobs.map(({ img, out }) =>
-    renderVariant({ id: img.id, hue: img.hue, settings: s, hex: out.color.hex, want: { png: true } }, {
-      priority: PRIORITY.export,
-      isStale: () => failed,
-    }).then(result => {
-      writing = writing.then(() => write(img.folder, out.file, result.png!)).then(() => onProgress(++done, jobs.length));
-      return writing;
-    }).catch(e => { failed = true; throw e; })));
+  // a few at a time, so finished pictures don't pile up in memory faster than they are saved
+  const lane = async () => {
+    try {
+      while (!failed) {
+        const job = jobs[next++];
+        if (!job) return;
+        const png = await renderPng({ id: job.img.id, hue: job.img.hue, settings: s, hex: job.out.color.hex },
+          { priority: PRIORITY.export, isStale: () => failed });
+        writing = writing.then(() => write(job.img.folder, job.out.file, png)).then(() => onProgress(++done, jobs.length));
+        await writing;
+      }
+    } catch (e) {
+      failed = true;
+      throw e;
+    }
+  };
+  await Promise.all(Array.from({ length: pool.size * 2 }, lane));
   return done;
 }
 

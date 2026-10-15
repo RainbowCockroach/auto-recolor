@@ -17,6 +17,8 @@ interface Props<T extends string> {
   initial: T;
   /** Slid out of view (phones), keeping its tab and open state for when it comes back. */
   away?: boolean;
+  /** Told which tab's content is on screen, or null while the drawer is shut. */
+  onShow?: (id: T | null) => void;
 }
 
 /** Closed, only a thin strip with the grab handle peeks out. */
@@ -33,7 +35,7 @@ const useViewportHeight = () => {
 };
 
 /** Phone: a sheet pulled up from the bottom. Wide screens: a tabbed side panel. */
-export function Drawer<T extends string>({ tabs, wide, initial, away }: Props<T>) {
+export function Drawer<T extends string>({ tabs, wide, initial, away, onShow }: Props<T>) {
   const [tabId, setTabId] = useState<T>(initial);
   const [open, setOpen] = useState(false);
   const [dragH, setDragH] = useState<number | null>(null);
@@ -51,6 +53,8 @@ export function Drawer<T extends string>({ tabs, wide, initial, away }: Props<T>
   const openH = Math.round(tab.tall ? Math.min(640, vh * 0.78) : Math.min(520, vh * 0.64));
   const height = dragH ?? (open ? openH : PEEK);
   const isOpen = wide || open;
+  const shownId = isOpen || dragH !== null ? tab.id : null;
+  useEffect(() => { onShow?.(shownId); }, [onShow, shownId]);
 
   const pick = (id: T) => {
     if (wide) setTabId(id);

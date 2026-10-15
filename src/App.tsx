@@ -52,7 +52,10 @@ export function App() {
   const [soundOn, setSound] = usePersistentState('auto-recolor.sound', readFlag, () => true);
   // bumped on each finished download, to replay the little star burst
   const [cheer, setCheer] = useState(0);
+  const [drawerTab, setDrawerTab] = useState<Tab | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  // folder names in use, shared by drops that load at the same time so two images never get the same folder
+  const folders = useRef(new Set<string>());
   const wide = useWide();
 
   const image = images.find(i => i.id === selectedImageId) ?? images[0] ?? null;
@@ -67,7 +70,7 @@ export function App() {
   }, [image, palettes, selectedColorId]);
 
   const preview = usePreview(image, target?.color ?? null, settings, showMask);
-  const thumbs = useThumbs(images, palettes, settings, image?.id ?? null);
+  const thumbs = useThumbs(images, palettes, settings, image?.id ?? null, drawerTab === 'results');
 
   useEffect(() => installSounds(), []);
   useEffect(() => setSoundOn(soundOn), [soundOn]);
@@ -77,6 +80,16 @@ export function App() {
     const t = setTimeout(() => setCheer(0), 900);
     return () => clearTimeout(t);
   }, [cheer]);
+
+  // when the gauge closes, focus goes back to the dial that opened it instead of the top of the page
+  const lastDial = useRef<DialKey | null>(null);
+  useEffect(() => {
+    if (tuning) lastDial.current = tuning;
+    else if (lastDial.current) {
+      document.querySelector<HTMLElement>(`.dial[data-dial="${lastDial.current}"]`)?.focus({ preventScroll: true });
+      lastDial.current = null;
+    }
+  }, [tuning]);
 
   // finished messages fade on their own; "…" ones stay until replaced
   useEffect(() => {
@@ -95,12 +108,10 @@ export function App() {
   const addFiles = useCallback(async (files: FileList | File[]) => {
     const list = [...files];
     const errors: string[] = [];
-    const taken = images.map(i => i.folder);
     for (const [n, file] of list.entries()) {
       setStatus(`Loading ${n + 1} of ${list.length}…`);
       try {
-        const img = await loadImage(file, taken);
-        taken.push(img.folder);
+        const img = await loadImage(file, folders.current);
         setImages(prev => [...prev, img]);
         play('powerup');
         setSelectedImageId(prev => prev ?? img.id);
@@ -110,9 +121,15 @@ export function App() {
     }
     if (errors.length) play('error');
     setStatus(errors.join(' '));
-  }, [images]);
+  }, []);
 
   const removeImage = (id: string) => {
+    const img = images.find(i => i.id === id);
+    if (img) {
+      folders.current.delete(img.folder);
+      img.full.close();
+      img.thumb.close();
+    }
     unloadImage(id);
     setImages(prev => prev.filter(i => i.id !== id));
     if (selectedImageId === id) setSelectedImageId(null);
@@ -250,15 +267,17 @@ export function App() {
           actions={wide ? undefined : exportRow} />
       </main>
 
-      <Drawer tabs={wide ? tabs.filter(t => t.id !== 'images') : tabs} wide={wide} initial="tune" away={!!sheetDial} />
+      <Drawer tabs={wide ? tabs.filter(t => t.id !== 'images') : tabs} wide={wide} initial="tune" away={!!sheetDial} onShow={setDrawerTab} />
       {sheetDial && (
         <section className="gauge-sheet" aria-label="Adjust">
           <Gauge dials={dials} active={sheetDial} onFocus={setTuning} onClose={() => setTuning(null)} />
         </section>
       )}
 
+      {/* always on the page, so screen readers notice when the text changes */}
+      <div className="sr-only" role="status">{message}</div>
       {message && (
-        <div className="toast" role="status">
+        <div className="toast">
           <span>{message}</span>
           {undo && (
             <button type="button" className="rb sm" data-sound="rewind" aria-label="Undo" title="Undo" onClick={() => { setPalettes(undo.palettes); setUndo(null); }}>

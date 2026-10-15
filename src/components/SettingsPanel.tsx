@@ -3,7 +3,7 @@ import { CircleQuestionMark, History, Leaf, RotateCcw, Sparkles, Undo2 } from 'l
 import { hueDistance, hueName, oklchToHex } from '../engine/color';
 import { DEFAULT_SETTINGS, type Settings, type Stats } from '../engine/types';
 import type { LoadedImage } from '../images';
-import { DialButton, Pill, Switch } from './Controls';
+import { DialButton, Pill, Switch, radioKeys, radioTab } from './Controls';
 import { Gauge, type DialSpec } from './Gauge';
 import { Guide } from './Guide';
 
@@ -86,7 +86,7 @@ export function SettingsPanel({ settings: s, image, stats, focus, inlineGauge, o
 
       <div className="dials">
         {dials.map(d => (
-          <DialButton key={d.key} label={d.label} value={d.value} min={d.min} max={d.max} format={d.format} hint={d.hint}
+          <DialButton key={d.key} name={d.key} label={d.label} value={d.value} min={d.min} max={d.max} format={d.format} hint={d.hint}
             disabled={d.disabled} active={d.key === focus} onClick={() => onFocus(d.key)} />
         ))}
       </div>
@@ -122,9 +122,10 @@ function MainColor({ image, stats, whole, onPickHue }: MainColorProps) {
           : <button type="button" className="rb xs" aria-label="Back to auto-detect" title="Back to auto-detect" onClick={() => onPickHue(null)}><Undo2 size={15} /></button>}
       </div>
       {image.autoHues.length > 1 && (
-        <div className="hue-picks" role="radiogroup" aria-label="Colors found in the image">
+        <div className="hue-picks" role="radiogroup" aria-label="Colors found in the image" onKeyDown={radioKeys}>
           {image.autoHues.map((c, i) => (
             <button key={c.hue} type="button" className="drop" role="radio" aria-checked={picked(i)}
+              tabIndex={radioTab(i, image.autoHues.findIndex((_, j) => picked(j)))}
               aria-label={`${hueName(c.hue)}, ${Math.round(c.share * 100)}%`} title={`${hueName(c.hue)} · ${Math.round(c.share * 100)}%`}
               style={{ backgroundColor: oklchToHex({ l: c.l, c: c.c, h: c.hue }) }}
               onClick={() => onPickHue(i === 0 ? null : c.hue)} />

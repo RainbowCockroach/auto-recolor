@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Settings, Stats } from './engine/types';
 import type { LoadedImage } from './images';
 import type { Palette, PaletteColor } from './model';
@@ -47,44 +47,75 @@ export function usePreview(image: LoadedImage | null, color: PaletteColor | null
     return () => { stale = true; };
   }, [id, hue, hex, settings, showMask]);
 
+  // replaced bitmaps are freed now instead of whenever garbage collection gets to them
+  const last = useRef<PreviewState | null>(null);
+  useEffect(() => {
+    const old = last.current;
+    last.current = state;
+    for (const b of [old?.result, old?.mask]) if (b && b !== state?.result && b !== state?.mask) b.close();
+  }, [state]);
+
   return state?.imageId === id ? state : null;
 }
 
 export const thumbKey = (imageId: string, colorId: string) => `${imageId}:${colorId}`;
 
 /**
- * Thumbnails for every image × color. The selected image goes first. Old thumbnails stay on screen
- * until their replacement is ready, so dragging a slider doesn't flicker.
+ * Thumbnails for every image × color, made only while `visible`. The selected image goes first.
+ * Old thumbnails stay on screen until their replacement is ready, so dragging a dial doesn't flicker.
  */
-export function useThumbs(images: LoadedImage[], palettes: Palette[], settings: Settings, selectedId: string | null) {
+export function useThumbs(images: LoadedImage[], palettes: Palette[], settings: Settings, selectedId: string | null, visible: boolean) {
   const [thumbs, setThumbs] = useState<ReadonlyMap<string, ImageBitmap>>(new Map());
+  // every thumbnail made so far, with what it was made from, so up-to-date ones aren't redone
+  const made = useRef(new Map<string, { bitmap: ImageBitmap; from: string }>());
+  const frame = useRef(0);
   // only what changes the pixels: not palette or color names
   const imagesKey = images.map(i => `${i.id}@${i.hue}`).join();
   const colorsKey = palettes.flatMap(p => p.colors.map(c => `${c.id}=${c.hex}`)).join();
+  const settingsKey = JSON.stringify(settings);
 
   useEffect(() => {
+    if (!visible) return;
     let stale = false;
+    const store = made.current;
+    // one re-render per frame, however many thumbnails land in it
+    const show = () => {
+      frame.current ||= requestAnimationFrame(() => {
+        frame.current = 0;
+        setThumbs(new Map([...store].map(([k, t]) => [k, t.bitmap])));
+      });
+    };
     const jobs = imagesKey ? imagesKey.split(',').map(s => s.split('@') as [string, string]) : [];
     const colors = colorsKey ? colorsKey.split(',').map(s => s.split('=') as [string, string]) : [];
-    // thumbnails of removed images or colors are dropped as new ones arrive
     const wanted = new Set(jobs.flatMap(([id]) => colors.map(([cid]) => thumbKey(id, cid))));
-    const keepWanted = (prev: ReadonlyMap<string, ImageBitmap>) => new Map([...prev].filter(([k]) => wanted.has(k)));
-
-    for (const [id, hueText] of jobs) {
-      const hue = Number(hueText);
-      for (const [colorId, hex] of colors) {
-        renderVariant({ id, hue, settings, hex, want: { thumb: true } }, {
-          priority: id === selectedId ? PRIORITY.thumbSelected : PRIORITY.thumb,
-          isStale: () => stale,
-        }).then(r => {
-          if (!stale) setThumbs(prev => keepWanted(prev).set(thumbKey(id, colorId), r.thumb!));
-        }, reportUnexpected);
-      }
+    for (const [key, t] of store) {
+      if (!wanted.has(key)) { t.bitmap.close(); store.delete(key); show(); }
     }
-    return () => { stale = true; };
+
+    // wait for a pause, so dragging a dial doesn't queue a full set of thumbnails per step
+    const timer = setTimeout(() => {
+      const s = JSON.parse(settingsKey) as Settings;
+      for (const [id, hueText] of jobs) {
+        for (const [colorId, hex] of colors) {
+          const key = thumbKey(id, colorId), from = `${hueText}|${hex}|${settingsKey}`;
+          if (store.get(key)?.from === from) continue;
+          renderVariant({ id, hue: Number(hueText), settings: s, hex, want: { thumb: true } }, {
+            priority: id === selectedId ? PRIORITY.thumbSelected : PRIORITY.thumb,
+            isStale: () => stale,
+          }).then(r => {
+            const bitmap = r.thumb!;
+            if (stale) { bitmap.close(); return; }
+            store.get(key)?.bitmap.close();
+            store.set(key, { bitmap, from });
+            show();
+          }, reportUnexpected);
+        }
+      }
+    }, 150);
+    return () => { stale = true; clearTimeout(timer); };
     // selectedId only reorders work, it shouldn't restart it
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [imagesKey, colorsKey, settings]);
+  }, [visible, imagesKey, colorsKey, settingsKey]);
 
   return thumbs;
 }

@@ -32,15 +32,20 @@ const isPng = (bytes: ArrayBuffer) => {
 export const withHue = (img: Omit<LoadedImage, 'hue'> & { hue?: number }): LoadedImage =>
   ({ ...img, hue: img.pickedHue ?? img.autoHue ?? 0 });
 
-/** Decodes a file in a worker. Throws an Error with a readable message when it can't. */
-export async function loadImage(file: File, takenFolders: string[]): Promise<LoadedImage> {
+/**
+ * Decodes a file in a worker. Throws an Error with a readable message when it can't.
+ * The image's folder name is added to `takenFolders` straight away, so loads running side by side never share one.
+ */
+export async function loadImage(file: File, takenFolders: Set<string>): Promise<LoadedImage> {
   const bytes = await file.arrayBuffer();
   if (!isPng(bytes)) throw new Error(`${file.name} isn't a PNG file.`);
   const id = crypto.randomUUID();
   pool.assign(id);
   try {
     const info = await pool.run(id, api => api.load(id, Comlink.transfer(bytes, [bytes])), { priority: PRIORITY.preview });
-    return withHue({ id, name: file.name, folder: folderName(file.name, takenFolders), pickedHue: null, ...info, depth: info.depth });
+    const folder = folderName(file.name, takenFolders);
+    takenFolders.add(folder);
+    return withHue({ id, name: file.name, folder, pickedHue: null, ...info, depth: info.depth });
   } catch (e) {
     pool.release(id);
     throw new Error(`Couldn't read ${file.name}: ${e instanceof Error ? e.message : String(e)}`, { cause: e });
