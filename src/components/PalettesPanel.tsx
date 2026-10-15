@@ -91,7 +91,7 @@ export function PalettesPanel({ palettes, selectedColorId, onSelectColor, onChan
               onClick={() => onChange(palettes.filter(x => x.id !== p.id), `palette “${p.name}”`)}>
               <Trash2 size={19} />
             </button>
-            <button type="button" className="rb sm flat" aria-label={`Fold ${p.name}`} title="Fold" aria-expanded="true" onClick={() => setFolded(true)}>
+            <button type="button" className="rb sm flat" data-sound="close" aria-label={`Fold ${p.name}`} title="Fold" aria-expanded="true" onClick={() => setFolded(true)}>
               <ChevronUp size={19} />
             </button>
           </div>
@@ -123,7 +123,7 @@ export function PalettesPanel({ palettes, selectedColorId, onSelectColor, onChan
           </div>
         </div>
       ) : (
-        <button type="button" className="palette folded" key={p.id} aria-expanded="false" onClick={() => unfold(p)}>
+        <button type="button" className="palette folded" data-sound="open" key={p.id} aria-expanded="false" onClick={() => unfold(p)}>
           <span className="palette-head">
             <span className="pname">{p.name}</span>
             <span className="count">{p.colors.length}</span>
