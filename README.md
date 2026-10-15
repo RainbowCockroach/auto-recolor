@@ -51,6 +51,18 @@ The built-in library (`src/presets.ts`) holds palettes from the Sims 4 recolor c
 | TEA woods | [lunedsims](https://lunedsims.tumblr.com/post/162253820126/tea-a-colour-palette-for-woods) |
 | Chalk Pastels | [cyansimblr](https://maxismatchccworld.tumblr.com/post/639475159431020544/cyansimblr-an-improved-pastels-palette-with) |
 
+## Sound and motion credits
+
+The sounds are made from scratch in `src/sound.ts` with Web Audio, and no code or sound files were copied. These guides shaped how they sound and how the buttons move:
+
+| What it shaped | Source |
+|---|---|
+| Small "juice" effects; slightly random pitch so repeated taps don't sound robotic | [Making a game feel juicy with simple effects](https://itch.io/blog/1059831/making-a-game-feel-juicy-with-simple-effects) (itch.io) |
+| Instant press, springy release with overshoot | [Game Feel & Juice](https://www.wayline.io/learn/game-feel/1) (Wayline), [Buttons & CTAs](https://playbooks.com/skills/dylantarre/animation-principles/buttons-ctas) (dylantarre) |
+| Lengths and shapes of click, toggle, success and error sounds | [UI Sound Design Skill](https://github.com/dannyjpwilliams/ui-sound-design-skill) (Danny Williams) |
+| Retro sound recipes: square and triangle waves, quick pitch slides, a lowpass to soften them | [sfxr / jsfxr](https://github.com/chr15m/jsfxr) (DrPetter, Chris McCormick), [retro-sound.js](https://github.com/learosema/retro-sound) (Lea Rosema) |
+| Why iPhones get no vibration | [WebHaptics on iOS Safari](https://azukiazusa.dev/en/blog/ios-safari-web-haptics) (azukiazusa), [iOS Haptics Tester](https://rapidtoolset.com/en/tool/ios-haptics-tester) |
+
 ## Development
 
 Needs Node 22.12 or newer.
