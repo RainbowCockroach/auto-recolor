@@ -47,7 +47,7 @@ Light theme only. Drop the current `prefers-color-scheme: dark` block.
 
 The canvas draws `--soft` as `#7a7268` and `--muted` as `#8a8278`. Those are too faint to read on the grey backgrounds (2.9–4.3:1), so use the darker values above. They pass 4.5:1 on every surface. This overrides the canvas.
 
-The selected color is shown with a **dark ink ring**, never an accent color, so the UI never competes with the palette.
+The selected color (and selected image, result or dial) is shown with a **thin warm-brown ring** (`--soft`, about 2.5px), never an accent color, so the UI never competes with the palette and the ring stays lighter than the candy drops it circles.
 
 Checker background for "checker" mode: `#d3d0cb` / `#c9c6c0`, 24px squares on the full-size viewer and smaller in wells.
 
@@ -66,9 +66,9 @@ There is no monospace font any more. Hex codes and file names use Fredoka.
 - **Honey button:** same shape with the honey gradient and base `#b9852d`. Download is a wide honey pill: "⬇ Download 103".
 - **Card:** radius 24px (28px on tablet), `box-shadow: inset 0 2px 0 #fff, 0 5px 0 #d3cfc8, 0 10px 22px rgba(70,60,50,.1)`.
 - **Canvas well** (behind the picture): `--well` with `inset 0 3px 8px rgba(60,50,40,.18)`, radius 16px, inside a card with 10px padding.
-- **Paint drop** (swatch): a circle with the color as `background-color`, styled as a **painted wooden marble**: a warm varnish shine at the top left (`radial-gradient(circle at 34% 28%, …)`), faint curved wood grain showing through the paint, and a warm inner shadow at the bottom plus the usual base. Selected: add `0 0 0 3px <surface>, 0 0 0 6px var(--ink)` and `scale(1.08)`. 30px in the phone tray (34px in the Colors drawer), 40px on tablet.
+- **Paint drop** (swatch): a circle with the color as `background-color`, plus `background-image: radial-gradient(circle at 34% 28%, rgba(255,255,255,.6) 0, transparent 32%)` and `box-shadow: inset 0 -4px 6px rgba(0,0,0,.22), inset 0 2px 2px rgba(255,255,255,.3), 0 2px 0 rgba(60,50,40,.22)`. The glossy candy marble is on purpose: keep it. Selected: add `0 0 0 3px <surface>, 0 0 0 5.5px var(--soft)` and `scale(1.08)`. 30px in the phone tray (34px in the Colors drawer), 40px on tablet.
 - **Pill toggle** (Painting/Flat/Manga, Original/Result): a sunken `--inset` track; the active option is a raised white pill.
-- **Dial** (`DialButton` in `Controls.tsx`): every number setting shows as a small round dial (80px), 3 per row. A ridged rim (`repeating-conic-gradient`) with a raised center face that shows the value in Fredoka, a small ink notch that turns with the value through 270°, and a 6px sage arc around it. It only shows the value: tapping it opens the big gauge. The open one gets an ink ring.
+- **Dial** (`DialButton` in `Controls.tsx`): every number setting shows as a small round dial (80px), 3 per row. A ridged rim (`repeating-conic-gradient`) with a raised center face that shows the value in Fredoka, a small ink notch that turns with the value through 270°, and a 6px sage arc around it. It only shows the value: tapping it opens the big gauge. The open one gets the thin brown selection ring.
 - **Big gauge** (`Gauge.tsx`, board "Phone · Tap a dial → big gauge" in the canvas). Turning small dials with a thumb was too hard, so they open this instead:
   - A wide half circle: thick sage arc on a grey track, a round raised thumb at the end, 11 tick marks, min and max values under the ends, and the value in big Fredoka inside the arc, where the thumb never covers it.
   - Slide left or right anywhere on it; its full width covers the whole range. Never trace the curve. `touch-action: none`.
@@ -117,17 +117,17 @@ From top to bottom; nothing is fixed to the top. Keep it compact: 8–10px page 
 
 No top bar. Three columns, with 24px padding:
 
-1. **Left rail** (84px): round image bubbles (selected one has an ink ring) and a dashed + bubble.
+1. **Left rail** (84px): round image bubbles (selected one has the thin brown selection ring) and a dashed + bubble.
 2. **Center:**
    - a big picture card. The original sits in a 112px bubble at top-left; Background, Mask and View big buttons sit at top-right; a color name chip at bottom-left.
-   - under it: the Download pill, the folder button and a quiet "3 images × 103 colors" note
-   - then the palette pills, the ◀ "14 of 76" ▶ control and a wider color tray (40px drops, `auto-fill`, about 2 rows visible)
-3. **Right panel** (340px card): tabs as round buttons with captions (Colors / Tune / Results), showing the same content as the phone drawer. Tune shows the same dial grid as the phone.
+   - under it, one row: on the left ◀ color name ▶ (with "hex · 14/76"); on the right a quiet "3 images × 103 colors" note, the Download pill and the folder button
+   - then the palette pills and a wider color tray (40px drops, `auto-fill`, about 2 rows visible), all lined up on the left
+3. **Right panel** (340px card): tabs as round buttons with captions (Colors / Tune / Results), showing the same content as the phone drawer. Tune shows the same dial grid as the phone. The card hugs its content (up to full height, then it scrolls) instead of standing as a tall, mostly empty card.
 
 ## Viewer (`ImageViewer.tsx`)
 
 - **Full screen**, with a checker or neutral background.
-- **Bars are subtle:** slim frosted glass (translucent, blurred, hairline edge, small 36px buttons), sized to their content, so the picture shows through. They fade while you drag a zoomed picture.
+- **Bars are subtle:** slim bars of the same warm clay as the cards (slightly see-through, a light blur, a thin base under them, small 36px clay buttons), sized to their content, so the picture shows through. They fade while you drag a zoomed picture.
 - **Top:** a floating rounded bar with the Original/Result pill, a caption (file name or "palette · color") and a round close button.
 - **Bottom:** a floating bar with round zoom-out and zoom-in buttons and a % button between them; tapping the % fits the picture to the screen. Buttons go faint at the zoom limits.
 - A small hint above it: "Pinch to zoom" ("Scroll to zoom" with a mouse), or "Drag to look around" once zoomed in.

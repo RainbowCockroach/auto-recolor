@@ -332,10 +332,8 @@ export function App() {
           onShowMask={setShowMask} onBackground={setBackground} onPick={pick} onAddClick={() => fileInput.current?.click()}
           images={wide ? undefined : images} onSelectImage={setSelectedImageId} />
 
-        {wide && exportRow}
-
         <ColorPicker palettes={palettes} selectedColorId={target?.color.id ?? null} onSelect={setSelectedColorId}
-          actions={wide ? undefined : exportRow} />
+          actions={exportRow} />
       </main>
 
       <Drawer tabs={wide ? tabs.filter(t => t.id !== 'images') : tabs} wide={wide} initial="tune" away={!!sheetDial} onShow={setDrawerTab} />
